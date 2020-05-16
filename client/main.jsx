@@ -2,7 +2,8 @@ import React from 'react';
 import { Meteor } from 'meteor/meteor';
 import { render } from 'react-dom';
 import { App } from '/imports/ui/App';
+import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
 
 Meteor.startup(() => {
-  render(<App/>, document.getElementById('react-target'));
+  render(<App />, document.getElementById('react-target'));
 });

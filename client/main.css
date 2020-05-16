@@ -1,4 +1,21 @@
-body {
-  padding: 10px;
-  font-family: sans-serif;
+.logo {
+  height: 32px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 16px;
+}
+
+.site-layout-sub-header-background {
+  background: #fff;
+}
+
+.site-layout-background {
+  background: #fff;
+}
+
+.nav-text {
+  color: white !important;
+}
+
+form .ant-btn {
+  margin-right: 8px;
 }
