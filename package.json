@@ -1,0 +1,45 @@
+{
+  "name": "contabilidade",
+  "private": true,
+  "scripts": {
+    "start": "meteor run",
+    "test": "meteor test --once --driver-package meteortesting:mocha",
+    "test-app": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
+    "visualize": "meteor --production --extra-packages bundle-visualizer"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^4.1.0",
+    "@babel/runtime": "^7.8.4",
+    "@reach/router": "^1.3.3",
+    "antd": "^4.2.2",
+    "lodash.keyby": "^4.6.0",
+    "meteor-node-stubs": "^1.0.0",
+    "react": "^16.13.0",
+    "react-dom": "^16.13.0"
+  },
+  "meteor": {
+    "mainModule": {
+      "client": "client/main.jsx",
+      "server": "server/main.js"
+    },
+    "testModule": "tests/main.js"
+  },
+  "eslintConfig": {
+    "settings": {
+      "import/resolver": "meteor"
+    },
+    "extends": [
+      "@tecsinapse/tecsinapse-js"
+    ]
+  },
+  "devDependencies": {
+    "@tecsinapse/eslint-config-tecsinapse-js": "^2.5.5",
+    "eslint": "^7.0.0",
+    "eslint-import-resolver-meteor": "^0.4.0",
+    "eslint-plugin-flowtype": "^5.0.1",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.20.0",
+    "eslint-plugin-react-hooks": "^4.0.2"
+  }
+}
