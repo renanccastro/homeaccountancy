@@ -12,10 +12,19 @@
   background: #fff;
 }
 
-.nav-text {
+.ant-layout-sider-children .nav-text {
   color: white !important;
 }
 
 form .ant-btn {
   margin-right: 8px;
+}
+.site-layout-main {
+  height: 100%;
+}
+.router-class {
+  height: 100%;
+}
+#react-target {
+  height: 100%;
 }

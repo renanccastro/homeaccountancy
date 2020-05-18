@@ -4,7 +4,7 @@ import { Accounts } from './accounts';
 function insertCategory(name) {
   Categories.insert({ name, createdAt: new Date() });
 }
-function insertAccount(name, creditCard = undefined, dueDate = undefined) {
+function insertAccount(name, dueDate = undefined) {
   Accounts.insert({
     name,
     createdAt: new Date(),

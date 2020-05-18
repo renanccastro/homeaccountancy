@@ -7,14 +7,34 @@ import {
 } from '@ant-design/icons';
 import { Link, useLocation } from '@reach/router';
 import Sider from 'antd/es/layout/Sider';
+import MailOutlined from '@ant-design/icons/lib/icons/MailOutlined';
+import AppstoreOutlined from '@ant-design/icons/lib/icons/AppstoreOutlined';
+import SubMenu from 'antd/es/menu/SubMenu';
+import SettingOutlined from '@ant-design/icons/lib/icons/SettingOutlined';
+import moment from 'moment';
 
 const { Header, Content, Footer } = Layout;
 
-export const Template = ({ component: Component }) => {
+export const Template = ({ component: Component, ...props }) => {
   const location = useLocation();
+  const startOfYear = moment()
+    .startOf('year')
+    .subtract(1, 'years');
+  const endOfYear = moment()
+    .endOf('year')
+    .add(1, 'years');
+
+  const monthsSet = new Set();
+  const yearsSet = new Set();
+  for (const m = startOfYear; m.isBefore(endOfYear); m.add(1, 'month')) {
+    yearsSet.add(m.format('YYYY'));
+    monthsSet.add(m.format('MMMM'));
+  }
+  const months = [...monthsSet];
+  const years = [...yearsSet];
 
   return (
-    <Layout>
+    <Layout className="site-layout-main">
       <Sider
         style={{
           overflow: 'auto',
@@ -41,18 +61,33 @@ export const Template = ({ component: Component }) => {
         <Header
           className="site-layout-sub-header-background"
           style={{ padding: 0 }}
-        />
+        >
+          <Menu mode="horizontal">
+            {years.map(year => (
+              <SubMenu icon={<SettingOutlined />} key={year} title={year}>
+                {months.map(month => (
+                  <Menu.Item key={`${year}_${month}`}>
+                    {' '}
+                    <Link
+                      to={`/dashboard/${year}/${month}`}
+                      className="nav-text"
+                    >
+                      {month}
+                    </Link>
+                  </Menu.Item>
+                ))}
+              </SubMenu>
+            ))}
+          </Menu>
+        </Header>
         <Content style={{ margin: '24px 16px 0' }}>
           <div
             className="site-layout-background"
             style={{ padding: 24, minHeight: 360 }}
           >
-            <Component />
+            <Component {...props} />
           </div>
         </Content>
-        <Footer style={{ textAlign: 'center' }}>
-          Ant Design ©2018 Created by Ant UED
-        </Footer>
       </Layout>
     </Layout>
   );

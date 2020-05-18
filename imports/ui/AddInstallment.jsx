@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button, Checkbox, Form, Input } from 'antd';
 import { useNavigate } from '@reach/router';
 import Select from 'antd/es/select';
@@ -6,6 +6,8 @@ import { useTracker } from 'meteor/react-meteor-data';
 import InputNumber from 'antd/es/input-number';
 import DatePicker from 'antd/es/date-picker';
 import moment from 'moment';
+import Dinero from 'dinero.js';
+import keyBy from 'lodash.keyby';
 import { InstallmentsCollection } from '../api/installments';
 import { Categories } from '../api/categories';
 import { Accounts } from '../api/accounts';
@@ -21,19 +23,27 @@ const tailLayout = {
 
 export const AddInstallment = () => {
   const navigate = useNavigate();
-
-  const { categories, accounts } = useTracker(() => {
+  const [form] = Form.useForm();
+  const [accountId, setAccountId] = useState(null);
+  const { categories, accounts, accountMap } = useTracker(() => {
     return {
       categories: Categories.find().fetch(),
       accounts: Accounts.find().fetch(),
+      accountMap: keyBy(Accounts.find().fetch(), '_id'),
     };
   });
   const onFinish = values => {
     InstallmentsCollection.insert({
       ...values,
-      startDate: values.startDate.toDate(),
+      startDate: values.dueDate?.toDate(),
+      startMonth: values.dueDate?.toDate(),
+      purchaseDate: values.dueDate?.toDate(),
     });
     navigate('../', { replace: true });
+  };
+
+  const onAccountChange = value => {
+    setAccountId(value);
   };
 
   const onFinishFailed = errorInfo => {
@@ -43,8 +53,9 @@ export const AddInstallment = () => {
   return (
     <Form
       {...layout}
+      form={form}
       name="basic"
-      initialValues={{ startDate: moment() }}
+      initialValues={{ purchaseDate: moment() }}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
     >
@@ -58,10 +69,10 @@ export const AddInstallment = () => {
 
       <Form.Item
         label="Category"
-        name="category"
+        name="categoryIds"
         rules={[{ required: true, message: 'Please input the category!' }]}
       >
-        <Select placeholder="Select an category" allowClear>
+        <Select placeholder="Select an category" allowClear mode="multiple">
           {categories.map(({ name, _id }) => (
             <Option value={_id}>{name}</Option>
           ))}
@@ -70,10 +81,14 @@ export const AddInstallment = () => {
 
       <Form.Item
         label="Account"
-        name="account"
+        name="accountId"
         rules={[{ required: true, message: 'Please input the account!' }]}
       >
-        <Select placeholder="Select an account" allowClear>
+        <Select
+          placeholder="Select an account"
+          allowClear
+          onChange={onAccountChange}
+        >
           {accounts.map(({ name, _id }) => (
             <Option value={_id}>{name}</Option>
           ))}
@@ -91,9 +106,49 @@ export const AddInstallment = () => {
       </Form.Item>
 
       <Form.Item
-        label="Start Date"
-        name="startDate"
-        rules={[{ required: true, message: 'Please input the start date!' }]}
+        label="Value of Installments"
+        name="value"
+        rules={[
+          {
+            required: true,
+            message: 'Please input the value of individual installments!',
+          },
+        ]}
+      >
+        <InputNumber
+          style={{ width: '100%' }}
+          formatter={value => {
+            console.log(value);
+            return new Dinero({ amount: parseInt(value, 10) || 0 }).toFormat();
+          }}
+          parser={value => {
+            return value.replace(/[^0-9]/g, '');
+          }}
+        />
+      </Form.Item>
+
+      {!accountId || !accountMap[accountId].creditCard ? (
+        <Form.Item
+          label="Start Date"
+          name="startDate"
+          rules={[{ required: true, message: 'Please input the start date!' }]}
+        >
+          <DatePicker format="DD/MM/YYYY" />
+        </Form.Item>
+      ) : (
+        <Form.Item
+          label="Start Month"
+          name="startMonth"
+          rules={[{ required: true, message: 'Please input the start month!' }]}
+        >
+          <DatePicker.MonthPicker />
+        </Form.Item>
+      )}
+
+      <Form.Item
+        label="Purchase Date"
+        name="purchaseDate"
+        rules={[{ required: true, message: 'Please input the purchase date!' }]}
       >
         <DatePicker format="DD/MM/YYYY" />
       </Form.Item>

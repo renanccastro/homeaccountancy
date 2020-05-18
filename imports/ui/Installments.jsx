@@ -3,7 +3,7 @@ import React from 'react';
 import { useTracker } from 'meteor/react-meteor-data';
 import keyBy from 'lodash.keyby';
 
-import { Table, Tag, Space, Button } from 'antd';
+import { Table, Tag, Space, Button, PageHeader, Row, Statistic } from 'antd';
 import { Link } from '@reach/router';
 import { InstallmentsCollection } from '../api/installments';
 import { Accounts } from '../api/accounts';
@@ -18,7 +18,7 @@ export const Installments = () => {
     return all.map(obj => ({
       ...obj,
       account: accounts[obj.accountId],
-      category: categories[obj.categoryId],
+      categories: obj.categoryIds.map(_id => categories[_id]),
     }));
   });
   const columns = [
@@ -26,7 +26,7 @@ export const Installments = () => {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
-      render: text => <a>{text}</a>,
+      render: text => text,
     },
     {
       title: 'Categories',
@@ -34,14 +34,11 @@ export const Installments = () => {
       dataIndex: 'categories',
       render: categories => (
         <>
-          {categories.map(tag => {
-            let color = tag.length > 5 ? 'geekblue' : 'green';
-            if (tag === 'loser') {
-              color = 'volcano';
-            }
+          {categories?.map(({ name }) => {
+            const color = name.length > 5 ? 'geekblue' : 'green';
             return (
-              <Tag color={color} key={tag}>
-                {tag.toUpperCase()}
+              <Tag color={color} key={name}>
+                {name.toUpperCase()}
               </Tag>
             );
           })}
@@ -52,18 +49,18 @@ export const Installments = () => {
       title: 'Account',
       dataIndex: 'account',
       key: 'account',
-      render: text => <a>{text}</a>,
+      render: account => <a>{account?.name}</a>,
       defaultSortOrder: 'descend',
       sorter: (a, b) => a.account.name - b.account.name,
-      filters: installments.map(({ account }) => ({
-        text: account.name,
-        value: account.name,
+      filters: installments?.map(({ account }) => ({
+        text: account?.name,
+        value: account?.name,
       })),
     },
     {
       title: '# of Installments',
-      dataIndex: 'numberOfInstallments',
-      key: 'numberOfInstallments',
+      dataIndex: 'installments',
+      key: 'installments',
     },
     {
       title: 'Start',
@@ -94,10 +91,21 @@ export const Installments = () => {
 
   return (
     <div>
-      <Button>
-        {' '}
-        <Link to="/new-installment">+ Add</Link>{' '}
-      </Button>
+      <PageHeader
+        title="Installments"
+        // tags={<Tag color="blue">Running</Tag>}
+        subTitle="every installment you need to control here"
+        extra={[
+          <Button type="primary">
+            <Link to="/new-installment">+ Add</Link>
+          </Button>,
+        ]}
+      >
+        <Row>
+          <Statistic title="Subtotal" />
+        </Row>
+      </PageHeader>
+
       <Table columns={columns} dataSource={installments} />
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Button, Checkbox, Form, Input } from 'antd';
 import { useNavigate } from '@reach/router';
 import Select from 'antd/es/select';
@@ -7,6 +7,8 @@ import InputNumber from 'antd/es/input-number';
 import DatePicker from 'antd/es/date-picker';
 import moment from 'moment';
 import keyBy from 'lodash.keyby';
+import Switch from 'antd/es/switch';
+import Dinero from 'dinero.js';
 import { Categories } from '../api/categories';
 import { Accounts } from '../api/accounts';
 import { AccountingEntries } from '../api/accountingEntries';
@@ -24,6 +26,8 @@ export const AddAccountingEntry = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const formRef = useRef();
+  const [accountId, setAccountId] = useState(null);
+
   const { categories, accounts, accountsMap } = useTracker(() => {
     const accountsData = Accounts.find().fetch();
     return {
@@ -35,9 +39,10 @@ export const AddAccountingEntry = () => {
 
   const onAccountChange = value => {
     const accountDueDate = accountsMap[value].dueDate;
+    setAccountId(value);
     if (accountDueDate) {
       formRef.current.setFieldsValue({
-        isCreditCard: true,
+        creditCard: true,
       });
     }
   };
@@ -45,7 +50,9 @@ export const AddAccountingEntry = () => {
   const onFinish = values => {
     AccountingEntries.insert({
       ...values,
-      dueDate: values.startDate.toDate(),
+      dueDate: values.dueDate?.toDate(),
+      startMonth: values.dueDate?.toDate(),
+      purchaseDate: values.dueDate?.toDate(),
       createdAt: new Date(),
     });
     navigate('../', { replace: true });
@@ -61,7 +68,12 @@ export const AddAccountingEntry = () => {
       {...layout}
       form={form}
       name="basic"
-      initialValues={{ dueDate: moment(), isCreditCard: false }}
+      initialValues={{
+        purchaseDate: moment(),
+        creditCard: false,
+        credit: false,
+        value: 0,
+      }}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
     >
@@ -75,10 +87,10 @@ export const AddAccountingEntry = () => {
 
       <Form.Item
         label="Category"
-        name="categoryId"
+        name="categoryIds"
         rules={[{ required: true, message: 'Please input the category!' }]}
       >
-        <Select placeholder="Select an category" allowClear>
+        <Select placeholder="Select an category" allowClear mode="multiple">
           {categories.map(({ name, _id }) => (
             <Option value={_id}>{name}</Option>
           ))}
@@ -101,12 +113,34 @@ export const AddAccountingEntry = () => {
         </Select>
       </Form.Item>
 
+      {!accountId || !accountsMap[accountId].creditCard ? (
+        <Form.Item
+          label="Due Date"
+          name="dueDate"
+          rules={[{ required: true, message: 'Please input the due date!' }]}
+        >
+          <DatePicker format="DD/MM/YYYY" />
+        </Form.Item>
+      ) : (
+        <Form.Item
+          label="Start Month"
+          name="startMonth"
+          rules={[{ required: true, message: 'Please input the start month!' }]}
+        >
+          <DatePicker.MonthPicker />
+        </Form.Item>
+      )}
+
       <Form.Item
-        label="Due Date"
-        name="dueDate"
-        rules={[{ required: true, message: 'Please input the due date!' }]}
+        label="Purchase Date"
+        name="purchaseDate"
+        rules={[{ required: true, message: 'Please input the purchase date!' }]}
       >
         <DatePicker format="DD/MM/YYYY" />
+      </Form.Item>
+
+      <Form.Item label="Is credit entry?" name="credit">
+        <Switch />
       </Form.Item>
 
       <Form.Item
@@ -115,11 +149,14 @@ export const AddAccountingEntry = () => {
         rules={[{ required: true, message: 'Please input the value!' }]}
       >
         <InputNumber
-          defaultValue={1000}
-          formatter={value =>
-            `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-          }
-          parser={value => value.replace(/\$\s?|(,*)/g, '')}
+          style={{ width: '100%' }}
+          formatter={value => {
+            console.log(value);
+            return new Dinero({ amount: parseInt(value, 10) || 0 }).toFormat();
+          }}
+          parser={value => {
+            return value.replace(/[^0-9]/g, '');
+          }}
         />
       </Form.Item>
 
