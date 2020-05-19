@@ -35,8 +35,11 @@ export const AddInstallment = () => {
   const onFinish = values => {
     InstallmentsCollection.insert({
       ...values,
+      dueDate: dueDate
+          ? startMonth.set('date', dueDate).toDate()
+          : values.dueDate.toDate(),
+
       startDate: values.dueDate?.toDate(),
-      startMonth: values.dueDate?.toDate(),
       purchaseDate: values.dueDate?.toDate(),
     });
     navigate('../', { replace: true });

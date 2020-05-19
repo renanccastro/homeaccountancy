@@ -22,7 +22,7 @@ const tailLayout = {
   wrapperCol: { offset: 8, span: 16 },
 };
 
-export const AddAccountingEntry = () => {
+export const AddAccountingEntry = ({ format }) => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const formRef = useRef();
@@ -47,12 +47,14 @@ export const AddAccountingEntry = () => {
     }
   };
 
-  const onFinish = values => {
+  const onFinish = ({ startMonth, ...values }) => {
+    const { dueDate } = accountsMap[values.accountId];
     AccountingEntries.insert({
       ...values,
-      dueDate: values.dueDate?.toDate(),
-      startMonth: values.dueDate?.toDate(),
-      purchaseDate: values.dueDate?.toDate(),
+      dueDate: dueDate
+        ? startMonth.set('date', dueDate).toDate()
+        : values.dueDate.toDate(),
+      purchaseDate: values.purchaseDate?.toDate(),
       createdAt: new Date(),
     });
     navigate('../', { replace: true });
@@ -71,8 +73,10 @@ export const AddAccountingEntry = () => {
       initialValues={{
         purchaseDate: moment(),
         creditCard: false,
-        credit: false,
+        credit: format === 'credit'.toString(),
         value: 0,
+        startMonth: moment().add(1, 'month'),
+        dueDate: moment(),
       }}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
@@ -139,7 +143,7 @@ export const AddAccountingEntry = () => {
         <DatePicker format="DD/MM/YYYY" />
       </Form.Item>
 
-      <Form.Item label="Is credit entry?" name="credit">
+      <Form.Item label="Is credit entry?" name="credit" valuePropName="checked">
         <Switch />
       </Form.Item>
 

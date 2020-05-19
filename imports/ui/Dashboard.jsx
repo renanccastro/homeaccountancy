@@ -21,10 +21,13 @@ import { Categories } from '../api/categories';
 import { Accounts } from '../api/accounts';
 import { AccountingEntries } from '../api/accountingEntries';
 
-export const Dashboard = ({ year = 2020, month = 1 }) => {
-  const startRange = moment(`${year}/${month}/01`, 'YYYY/MMMM/DD').startOf(
-    'month'
-  );
+export const Dashboard = ({ year, month }) => {
+  const currentYear = moment().format('YYYY');
+  const currentMonth = moment().format('MMMM');
+  const startRange = moment(
+    `${year || currentYear}/${month || currentMonth}/01`,
+    'YYYY/MMMM/DD'
+  ).startOf('month');
   const endRange = moment(`${year}/${month}/01`, 'YYYY/MMMM/DD').endOf('month');
   const dateQuery = {
     $and: [
@@ -162,7 +165,7 @@ export const Dashboard = ({ year = 2020, month = 1 }) => {
         subTitle="every operation that adds account balance"
         extra={[
           <Button key="3" type="primary">
-            <Link to="/new-accounting-entry">+ Add</Link>
+            <Link to="/new-accounting-entry/credit">+ Add</Link>
           </Button>,
         ]}
       >
@@ -184,7 +187,7 @@ export const Dashboard = ({ year = 2020, month = 1 }) => {
         subTitle="every operation that subtracts account balance"
         extra={[
           <Button key="2" type="primary">
-            <Link to="/new-accounting-entry">+ Add</Link>
+            <Link to="/new-accounting-entry/debit">+ Add</Link>
           </Button>,
         ]}
       >

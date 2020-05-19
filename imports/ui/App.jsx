@@ -17,7 +17,7 @@ export const App = () => (
     <Template component={Dashboard} path="/dashboard/:year/:month" />
     <Template component={Dashboard} path="/" />
     <Template component={AddInstallment} path="/new-installment" />
-    <Template component={AddAccountingEntry} path="/new-accounting-entry" />
+    <Template component={AddAccountingEntry} path="/new-accounting-entry/:format" />
     <Template component={Installments} path="installments" />
   </Router>
 );
