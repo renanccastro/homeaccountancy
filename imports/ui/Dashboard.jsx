@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { useTracker } from 'meteor/react-meteor-data';
 import keyBy from 'lodash.keyby';
@@ -16,68 +16,30 @@ import {
 import Dinero from 'dinero.js';
 import { Link } from '@reach/router';
 import moment from 'moment';
-import { InstallmentsCollection } from '../api/installments';
+import Tabs from 'antd/es/tabs';
+import AppleOutlined from '@ant-design/icons/lib/icons/AppleOutlined';
+import AndroidOutlined from '@ant-design/icons/lib/icons/AndroidOutlined';
 import { Categories } from '../api/categories';
-import { Accounts } from '../api/accounts';
 import { AccountingEntries } from '../api/accountingEntries';
+import { fetchDashboardData } from './helpers/dashboardHelpers';
 
-export const Dashboard = ({ year, month }) => {
-  const currentYear = moment().format('YYYY');
-  const currentMonth = moment().format('MMMM');
-  const startRange = moment(
-    `${year || currentYear}/${month || currentMonth}/01`,
-    'YYYY/MMMM/DD'
-  ).startOf('month');
-  const endRange = moment(`${year}/${month}/01`, 'YYYY/MMMM/DD').endOf('month');
-  const dateQuery = {
-    $and: [
-      { dueDate: { $gte: startRange.toDate() } },
-      { dueDate: { $lte: endRange.toDate() } },
-    ],
-  };
-  const { credit, debit, balance, debitBalance, creditBalance } = useTracker(
-    () => {
-      const creditEntries = AccountingEntries.find({
-        credit: true,
-        ...dateQuery,
-      }).fetch();
-      const debitEntries = AccountingEntries.find({
-        credit: false,
-        ...dateQuery,
-      }).fetch();
-      const installments = InstallmentsCollection.find().fetch();
-      const accounts = keyBy(Accounts.find().fetch(), '_id');
-      const categories = keyBy(Categories.find().fetch(), '_id');
+const { TabPane } = Tabs;
 
-      const mapper = obj => ({
-        ...obj,
-        money: new Dinero({ amount: obj.value }),
-        account: accounts[obj.accountId],
-        categories: obj.categoryIds.map(_id => categories[_id]),
-      });
-
-      const mappedCredit = creditEntries.map(mapper);
-      const mappedDebit = debitEntries.map(mapper);
-      let dineroBalance = new Dinero({ amount: 0 });
-      let creditDinero = new Dinero({ amount: 0 });
-      let debitDinero = new Dinero({ amount: 0 });
-      mappedCredit.forEach(({ money }) => {
-        dineroBalance = dineroBalance.add(money);
-        creditDinero = creditDinero.add(money);
-      });
-      mappedDebit.forEach(({ money }) => {
-        dineroBalance = dineroBalance.subtract(money);
-        debitDinero = debitDinero.add(money);
-      });
-      return {
-        credit: mappedCredit,
-        debit: mappedDebit,
-        balance: dineroBalance,
-        creditBalance: creditDinero,
-        debitBalance: debitDinero,
-      };
-    }
+export const Dashboard = ({
+  year = moment().format('YYYY'),
+  month = moment().format('MMMM'),
+}) => {
+  const startRange = moment(`${year}/${month}/01`, 'YYYY/MMMM/DD').startOf(
+    'month'
   );
+  const endRange = moment(`${year}/${month}/01`, 'YYYY/MMMM/DD').endOf('month');
+
+  const [payed, setPayed] = useState(false);
+  const { credit, debit, balance, debitBalance, creditBalance } = useTracker(
+    () => fetchDashboardData(startRange, endRange, { payed }),
+    [startRange, endRange, payed]
+  );
+
   const columns = entries => [
     {
       title: 'Name',
@@ -117,8 +79,8 @@ export const Dashboard = ({ year, month }) => {
     },
     {
       title: '# of Installments',
-      dataIndex: 'numberOfInstallments',
-      key: 'numberOfInstallments',
+      dataIndex: 'installment',
+      key: 'installment',
     },
     {
       title: 'Due date',
@@ -195,7 +157,30 @@ export const Dashboard = ({ year, month }) => {
           <Statistic title="Subtotal" value={debitBalance.toFormat()} />
         </Row>
       </PageHeader>
-      <Table columns={columns(debit)} dataSource={debit} />
+      <Tabs defaultActiveKey="1" onChange={key => setPayed(key === '2')}>
+        <TabPane
+          tab={
+            <span>
+              <AppleOutlined />
+              Pending
+            </span>
+          }
+          key="1"
+        >
+          <Table columns={columns(debit)} dataSource={debit} />
+        </TabPane>
+        <TabPane
+          tab={
+            <span>
+              <AndroidOutlined />
+              Payed
+            </span>
+          }
+          key="2"
+        >
+          <Table columns={columns(debit)} dataSource={debit} />
+        </TabPane>
+      </Tabs>
     </div>
   );
 };

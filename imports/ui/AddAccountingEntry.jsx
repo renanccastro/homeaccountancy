@@ -56,6 +56,7 @@ export const AddAccountingEntry = ({ format }) => {
         : values.dueDate.toDate(),
       purchaseDate: values.purchaseDate?.toDate(),
       createdAt: new Date(),
+      payedInstallments: [],
     });
     navigate('../', { replace: true });
   };

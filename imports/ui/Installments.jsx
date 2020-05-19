@@ -5,6 +5,7 @@ import keyBy from 'lodash.keyby';
 
 import { Table, Tag, Space, Button, PageHeader, Row, Statistic } from 'antd';
 import { Link } from '@reach/router';
+import moment from 'moment';
 import { InstallmentsCollection } from '../api/installments';
 import { Accounts } from '../api/accounts';
 import { Categories } from '../api/categories';
@@ -67,6 +68,7 @@ export const Installments = () => {
       dataIndex: 'start',
       key: 'start',
       defaultSortOrder: 'descend',
+      render: o => moment(o).format('DD/MM/YYYY'),
       sorter: (a, b) => a.start - b.start,
     },
     {
@@ -77,9 +79,9 @@ export const Installments = () => {
           <a
             onClick={() => {
               // eslint-disable-next-line no-restricted-globals
-              confirm('Are you sure?').then(() => {
+              if (confirm('Are you sure?')) {
                 InstallmentsCollection.remove(record._id);
-              });
+              }
             }}
           >
             Delete

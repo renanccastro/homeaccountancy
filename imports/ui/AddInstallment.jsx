@@ -32,15 +32,16 @@ export const AddInstallment = () => {
       accountMap: keyBy(Accounts.find().fetch(), '_id'),
     };
   });
-  const onFinish = values => {
+  const onFinish = ({ startMonth, startDate, ...values }) => {
+    const { dueDate } = accountMap[values.accountId];
+
     InstallmentsCollection.insert({
       ...values,
-      dueDate: dueDate
-          ? startMonth.set('date', dueDate).toDate()
-          : values.dueDate.toDate(),
-
-      startDate: values.dueDate?.toDate(),
+      startDate: dueDate
+        ? startMonth.set('date', dueDate).toDate()
+        : values.startDate.toDate(),
       purchaseDate: values.dueDate?.toDate(),
+      finished: false,
     });
     navigate('../', { replace: true });
   };
@@ -58,7 +59,11 @@ export const AddInstallment = () => {
       {...layout}
       form={form}
       name="basic"
-      initialValues={{ purchaseDate: moment() }}
+      initialValues={{
+        purchaseDate: moment(),
+        startDate: moment(),
+        finished: false,
+      }}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
     >
