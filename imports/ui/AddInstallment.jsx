@@ -42,6 +42,7 @@ export const AddInstallment = () => {
         : values.startDate.toDate(),
       purchaseDate: values.dueDate?.toDate(),
       finished: false,
+      payedInstallments: [],
     });
     navigate('../', { replace: true });
   };

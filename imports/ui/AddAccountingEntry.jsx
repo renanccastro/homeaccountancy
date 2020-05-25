@@ -7,8 +7,10 @@ import InputNumber from 'antd/es/input-number';
 import DatePicker from 'antd/es/date-picker';
 import moment from 'moment';
 import keyBy from 'lodash.keyby';
+import mapValues from 'lodash.mapvalues';
 import Switch from 'antd/es/switch';
 import Dinero from 'dinero.js';
+import Spin from 'antd/es/spin';
 import { Categories } from '../api/categories';
 import { Accounts } from '../api/accounts';
 import { AccountingEntries } from '../api/accountingEntries';
@@ -22,20 +24,23 @@ const tailLayout = {
   wrapperCol: { offset: 8, span: 16 },
 };
 
-export const AddAccountingEntry = ({ format }) => {
+export const AddAccountingEntry = ({ format, id }) => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const formRef = useRef();
   const [accountId, setAccountId] = useState(null);
 
-  const { categories, accounts, accountsMap } = useTracker(() => {
-    const accountsData = Accounts.find().fetch();
-    return {
-      categories: Categories.find().fetch(),
-      accounts: accountsData,
-      accountsMap: keyBy(accountsData, '_id'),
-    };
-  });
+  const { categories, accounts, accountsMap, existingEntry } = useTracker(
+    () => {
+      const accountsData = Accounts.find().fetch();
+      return {
+        categories: Categories.find().fetch(),
+        accounts: accountsData,
+        accountsMap: keyBy(accountsData, '_id'),
+        existingEntry: AccountingEntries.findOne(id),
+      };
+    }
+  );
 
   const onAccountChange = value => {
     const accountDueDate = accountsMap[value].dueDate;
@@ -49,36 +54,62 @@ export const AddAccountingEntry = ({ format }) => {
 
   const onFinish = ({ startMonth, ...values }) => {
     const { dueDate } = accountsMap[values.accountId];
-    AccountingEntries.insert({
-      ...values,
+    const dates = {
       dueDate: dueDate
         ? startMonth.set('date', dueDate).toDate()
         : values.dueDate.toDate(),
       purchaseDate: values.purchaseDate?.toDate(),
+    };
+
+    if (id) {
+      AccountingEntries.update(id, {
+        $set: {
+          ...values,
+          ...dates,
+          updatedAt: new Date(),
+        },
+      });
+      navigate('/', { replace: true });
+      return;
+    }
+    AccountingEntries.insert({
+      ...values,
+      ...dates,
       createdAt: new Date(),
-      payedInstallments: [],
     });
-    navigate('../', { replace: true });
+    navigate('/', { replace: true });
   };
 
   const onFinishFailed = errorInfo => {
     console.log('Failed:', errorInfo);
   };
 
+  const initialValues = existingEntry
+    ? mapValues(existingEntry, (value, key) => {
+        if (value instanceof Date) {
+          return moment(value);
+        }
+        return value;
+      })
+    : {
+        purchaseDate: moment(),
+        creditCard: false,
+        credit: format === 'credit',
+        value: 0,
+        startMonth: moment().add(1, 'month'),
+        dueDate: moment(),
+        payed: false,
+      };
+  if (id && !existingEntry) {
+    return <Spin tip="Loading..." />;
+  }
   return (
     <Form
       ref={formRef}
       {...layout}
       form={form}
       name="basic"
-      initialValues={{
-        purchaseDate: moment(),
-        creditCard: false,
-        credit: format === 'credit'.toString(),
-        value: 0,
-        startMonth: moment().add(1, 'month'),
-        dueDate: moment(),
-      }}
+      initialValues={initialValues}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
     >
@@ -145,6 +176,10 @@ export const AddAccountingEntry = ({ format }) => {
       </Form.Item>
 
       <Form.Item label="Is credit entry?" name="credit" valuePropName="checked">
+        <Switch />
+      </Form.Item>
+
+      <Form.Item label="Payed?" name="payed" valuePropName="checked">
         <Switch />
       </Form.Item>
 

@@ -11,6 +11,7 @@ import {
   Table,
   Space,
   Statistic,
+  Menu,
 } from 'antd';
 
 import Dinero from 'dinero.js';
@@ -21,7 +22,12 @@ import AppleOutlined from '@ant-design/icons/lib/icons/AppleOutlined';
 import AndroidOutlined from '@ant-design/icons/lib/icons/AndroidOutlined';
 import { Categories } from '../api/categories';
 import { AccountingEntries } from '../api/accountingEntries';
-import { fetchDashboardData } from './helpers/dashboardHelpers';
+import { useDashboardData } from './helpers/dashboardHelpers';
+import { DashboardTable } from '../components/DashboardTable';
+import {
+  getInstallmentNumber,
+  InstallmentsCollection,
+} from '../api/installments';
 
 const { TabPane } = Tabs;
 
@@ -29,17 +35,32 @@ export const Dashboard = ({
   year = moment().format('YYYY'),
   month = moment().format('MMMM'),
 }) => {
-  const startRange = moment(`${year}/${month}/01`, 'YYYY/MMMM/DD').startOf(
-    'month'
-  );
-  const endRange = moment(`${year}/${month}/01`, 'YYYY/MMMM/DD').endOf('month');
+  const start = moment(`${year}/${month}/01`, 'YYYY/MMMM/DD').toDate();
+  const startRange = moment(start).startOf('month');
+  const endRange = moment(start).endOf('month');
 
+  const [received, setReceived] = useState(false);
   const [payed, setPayed] = useState(false);
-  const { credit, debit, balance, debitBalance, creditBalance } = useTracker(
-    () => fetchDashboardData(startRange, endRange, { payed }),
-    [startRange, endRange, payed]
+  const { credit, debit, debitBalance, creditBalance } = useDashboardData(
+    startRange,
+    endRange,
+    { payed, received }
   );
 
+  const markAsPayed = rows => {
+    rows.forEach(_id => {
+      const accountingEntry = AccountingEntries.findOne(_id);
+      if (!accountingEntry) {
+        const { startDate } = InstallmentsCollection.findOne(_id);
+        const installment = getInstallmentNumber(startDate, endRange);
+        InstallmentsCollection.update(_id, {
+          payedInstallments: { $pushToSet: installment },
+        });
+      } else {
+        AccountingEntries.update(_id, { $set: { payed: true } });
+      }
+    });
+  };
   const columns = entries => [
     {
       title: 'Name',
@@ -114,6 +135,12 @@ export const Dashboard = ({
           >
             Delete
           </a>
+          <Link
+            to={`/new-accounting-entry/credit/${record._id}`}
+            className="nav-text"
+          >
+            Edit
+          </Link>
         </Space>
       ),
     },
@@ -121,66 +148,26 @@ export const Dashboard = ({
 
   return (
     <div>
-      <PageHeader
+      <DashboardTable
         title="Credit"
-        // tags={<Tag color="blue">Running</Tag>}
-        subTitle="every operation that adds account balance"
-        extra={[
-          <Button key="3" type="primary">
-            <Link to="/new-accounting-entry/credit">+ Add</Link>
-          </Button>,
-        ]}
-      >
-        <Row>
-          <Statistic title="Balance" value={balance.toFormat()} />
-          <Statistic
-            title="Subtotal"
-            value={creditBalance.toFormat()}
-            style={{
-              margin: '0 32px',
-            }}
-          />
-        </Row>
-      </PageHeader>
-      <Table columns={columns(credit)} dataSource={credit} />
-      <PageHeader
+        subtitle="every operation that adds account balance"
+        columns={columns(credit)}
+        datasource={credit}
+        balance={creditBalance.toFormat()}
+        newEntryKey="credit"
+        setPayed={setReceived}
+        onClickPayed={markAsPayed}
+      />
+      <DashboardTable
         title="Debit"
-        // tags={<Tag color="blue">Running</Tag>}
-        subTitle="every operation that subtracts account balance"
-        extra={[
-          <Button key="2" type="primary">
-            <Link to="/new-accounting-entry/debit">+ Add</Link>
-          </Button>,
-        ]}
-      >
-        <Row>
-          <Statistic title="Subtotal" value={debitBalance.toFormat()} />
-        </Row>
-      </PageHeader>
-      <Tabs defaultActiveKey="1" onChange={key => setPayed(key === '2')}>
-        <TabPane
-          tab={
-            <span>
-              <AppleOutlined />
-              Pending
-            </span>
-          }
-          key="1"
-        >
-          <Table columns={columns(debit)} dataSource={debit} />
-        </TabPane>
-        <TabPane
-          tab={
-            <span>
-              <AndroidOutlined />
-              Payed
-            </span>
-          }
-          key="2"
-        >
-          <Table columns={columns(debit)} dataSource={debit} />
-        </TabPane>
-      </Tabs>
+        subtitle="every operation that subtracts account balance"
+        columns={columns(debit)}
+        datasource={debit}
+        balance={debitBalance.toFormat()}
+        newEntryKey="debit"
+        setPayed={setPayed}
+        onClickPayed={markAsPayed}
+      />
     </div>
   );
 };
