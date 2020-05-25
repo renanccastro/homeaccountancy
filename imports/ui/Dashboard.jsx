@@ -22,6 +22,8 @@ import AppleOutlined from '@ant-design/icons/lib/icons/AppleOutlined';
 import AndroidOutlined from '@ant-design/icons/lib/icons/AndroidOutlined';
 import { Categories } from '../api/categories';
 import { AccountingEntries } from '../api/accountingEntries';
+import { Accounts } from "../api/accounts";
+import { CreditEntries, DebitEntries} from "../api/client/creditAndDebit";
 import { useDashboardData } from './helpers/dashboardHelpers';
 import { DashboardTable } from '../components/DashboardTable';
 import {
@@ -46,6 +48,24 @@ export const Dashboard = ({
     endRange,
     { payed, received }
   );
+
+  const filters = {
+    start,
+    startRange: startRange.toDate(),
+    endRange: endRange.toDate(),
+    payed,
+    received,
+  }
+
+  const {creditData, debitData} = useTracker(() => {
+    const handle = Meteor.subscribe("dashboardData.fetchAll", filters);
+    return {
+      handle,
+      creditData: CreditEntries.find().fetch(),
+      debitData: DebitEntries.find().fetch(),
+    }
+  })
+
 
   const markAsPayed = rows => {
     rows.forEach(_id => {
