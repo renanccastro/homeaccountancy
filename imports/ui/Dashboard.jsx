@@ -11,7 +11,7 @@ import {
   Table,
   Space,
   Statistic,
-  Menu,
+  Menu, Spin,
 } from 'antd';
 
 import Dinero from 'dinero.js';
@@ -22,6 +22,8 @@ import AppleOutlined from '@ant-design/icons/lib/icons/AppleOutlined';
 import AndroidOutlined from '@ant-design/icons/lib/icons/AndroidOutlined';
 import { Categories } from '../api/categories';
 import { AccountingEntries } from '../api/accountingEntries';
+import { Accounts } from "../api/accounts";
+import { CreditEntries, DebitEntries} from "../api/client/creditAndDebit";
 import { useDashboardData } from './helpers/dashboardHelpers';
 import { DashboardTable } from '../components/DashboardTable';
 import {
@@ -41,10 +43,36 @@ export const Dashboard = ({
 
   const [received, setReceived] = useState(false);
   const [payed, setPayed] = useState(false);
-  const { credit, debit, debitBalance, creditBalance } = useDashboardData(
-    startRange,
-    endRange,
-    { payed, received }
+
+  const filters = {
+    start,
+    startRange: startRange.toDate(),
+    endRange: endRange.toDate(),
+    payed,
+    received,
+  }
+
+  const {credit, debit, accountsArray, categoriesArray, installments, subscriptionHandle} = useTracker(() => {
+    const handle = Meteor.subscribe("dashboardData.fetchAll", filters);
+      return {
+        subscriptionHandle: handle,
+        credit: CreditEntries.find().fetch(),
+        debit: DebitEntries.find().fetch(),
+        accountsArray: Accounts.find().fetch(),
+        categoriesArray: Categories.find().fetch(),
+        installments: InstallmentsCollection.find().fetch(),
+      }
+  })
+
+  const { debitBalance, creditBalance} = useDashboardData(
+      credit,
+      debit,
+      accountsArray,
+      categoriesArray,
+      installments,
+      startRange,
+      endRange,
+      { payed, received }
   );
 
   const markAsPayed = rows => {
@@ -61,6 +89,7 @@ export const Dashboard = ({
       }
     });
   };
+
   const columns = entries => [
     {
       title: 'Name',
@@ -71,31 +100,41 @@ export const Dashboard = ({
     },
     {
       title: 'Categories',
-      key: 'categories',
-      dataIndex: 'categories',
-      render: categories => (
-        <>
-          {categories?.map(({ name }) => {
-            const color = name.length > 5 ? 'geekblue' : 'green';
-            return (
-              <Tag color={color} key={name}>
-                {name.toUpperCase()}
-              </Tag>
-            );
-          })}
-        </>
-      ),
+      key: 'categoryIds',
+      dataIndex: 'categoryIds',
+      render: categorieIdArray => {
+        let names = [];
+        categorieIdArray.forEach(catId => {
+          const categorie = categoriesArray.find(cat => cat._id == catId);
+          names.push(categorie.name)
+        })
+        return (
+            <>
+              {names.map(name => {
+                const color = name.length > 5 ? 'geekblue' : 'green';
+                return (
+                    <Tag color={color} key={name}>
+                      {name.toUpperCase()}
+                    </Tag>
+                )
+              })}
+            </>
+        )
+      },
     },
     {
       title: 'Account',
-      dataIndex: 'account',
-      key: 'account',
-      render: account => account.name,
+      dataIndex: 'accountId',
+      key: 'accountId',
+      render: accountId => {
+        const account = accountsArray.find(acc => acc._id == accountId);
+        return account.name
+      },
       defaultSortOrder: 'descend',
       sorter: (a, b) => a.account.name - b.account.name,
       filters: entries.map(({ account }) => ({
-        text: account.name,
-        value: account.name,
+        text: account?.name,
+        value: account?.name,
       })),
     },
     {
@@ -113,11 +152,11 @@ export const Dashboard = ({
     },
     {
       title: 'Value',
-      dataIndex: 'money',
-      key: 'money',
+      dataIndex: 'value',
+      key: 'value',
       defaultSortOrder: 'descend',
       sorter: (a, b) => a.money.greaterThan(b.money),
-      render: value => value.toFormat(),
+      render: value => Dinero({ amount: value }).toFormat(),
     },
     {
       title: 'Action',
@@ -146,28 +185,38 @@ export const Dashboard = ({
     },
   ];
 
+
   return (
-    <div>
-      <DashboardTable
-        title="Credit"
-        subtitle="every operation that adds account balance"
-        columns={columns(credit)}
-        datasource={credit}
-        balance={creditBalance.toFormat()}
-        newEntryKey="credit"
-        setPayed={setReceived}
-        onClickPayed={markAsPayed}
-      />
-      <DashboardTable
-        title="Debit"
-        subtitle="every operation that subtracts account balance"
-        columns={columns(debit)}
-        datasource={debit}
-        balance={debitBalance.toFormat()}
-        newEntryKey="debit"
-        setPayed={setPayed}
-        onClickPayed={markAsPayed}
-      />
-    </div>
+      <>
+        {!subscriptionHandle.ready() ?
+            <div>
+              <Spin/>
+            </div>
+        :
+            <div>
+              <DashboardTable
+                  title="Credit"
+                  subtitle="every operation that adds account balance"
+                  columns={columns(credit)}
+                  datasource={credit}
+                  balance={creditBalance.toFormat()}
+                  newEntryKey="credit"
+                  setPayed={setReceived}
+                  onClickPayed={markAsPayed}
+              />
+              <DashboardTable
+                  title="Debit"
+                  subtitle="every operation that subtracts account balance"
+                  columns={columns(debit)}
+                  datasource={debit}
+                  balance={debitBalance.toFormat()}
+                  newEntryKey="debit"
+                  setPayed={setPayed}
+                  onClickPayed={markAsPayed}
+              />
+            </div>
+        }
+
+      </>
   );
 };
