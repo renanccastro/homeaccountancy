@@ -11,7 +11,7 @@ import {
   Table,
   Space,
   Statistic,
-  Menu,
+  Menu, Spin,
 } from 'antd';
 
 import Dinero from 'dinero.js';
@@ -43,11 +43,6 @@ export const Dashboard = ({
 
   const [received, setReceived] = useState(false);
   const [payed, setPayed] = useState(false);
-  const { credit, debit, debitBalance, creditBalance } = useDashboardData(
-    startRange,
-    endRange,
-    { payed, received }
-  );
 
   const filters = {
     start,
@@ -57,15 +52,28 @@ export const Dashboard = ({
     received,
   }
 
-  const {creditData, debitData} = useTracker(() => {
+  const {credit, debit, accountsArray, categoriesArray, installments, subscriptionHandle} = useTracker(() => {
     const handle = Meteor.subscribe("dashboardData.fetchAll", filters);
-    return {
-      handle,
-      creditData: CreditEntries.find().fetch(),
-      debitData: DebitEntries.find().fetch(),
-    }
+      return {
+        subscriptionHandle: handle,
+        credit: CreditEntries.find().fetch(),
+        debit: DebitEntries.find().fetch(),
+        accountsArray: Accounts.find().fetch(),
+        categoriesArray: Categories.find().fetch(),
+        installments: InstallmentsCollection.find().fetch(),
+      }
   })
 
+  const { debitBalance, creditBalance, balance} = useDashboardData(
+      credit,
+      debit,
+      accountsArray,
+      categoriesArray,
+      installments,
+      startRange,
+      endRange,
+      { payed, received }
+  );
 
   const markAsPayed = rows => {
     rows.forEach(_id => {
@@ -81,6 +89,7 @@ export const Dashboard = ({
       }
     });
   };
+
   const columns = entries => [
     {
       title: 'Name',
@@ -106,11 +115,14 @@ export const Dashboard = ({
         </>
       ),
     },
-    {
+    { //TODO VER ESSA FITA AQUI DE APRESENTAR O DADO CERTO NA COLUNA. TALVEZ NORMALIZACAO DE ENTRADA NO BANCO?
       title: 'Account',
       dataIndex: 'account',
       key: 'account',
-      render: account => account.name,
+      render: account => {
+        console.log(account)
+        return account.name
+      },
       defaultSortOrder: 'descend',
       sorter: (a, b) => a.account.name - b.account.name,
       filters: entries.map(({ account }) => ({
@@ -166,28 +178,46 @@ export const Dashboard = ({
     },
   ];
 
+  if (!subscriptionHandle.ready()) {
+    return (
+        <div>
+          <Spin />
+        </div>
+    )
+  }
+  if (subscriptionHandle.ready()) {
+    console.log(credit)
+    console.log(debit)
+  }
   return (
-    <div>
-      <DashboardTable
-        title="Credit"
-        subtitle="every operation that adds account balance"
-        columns={columns(credit)}
-        datasource={credit}
-        balance={creditBalance.toFormat()}
-        newEntryKey="credit"
-        setPayed={setReceived}
-        onClickPayed={markAsPayed}
-      />
-      <DashboardTable
-        title="Debit"
-        subtitle="every operation that subtracts account balance"
-        columns={columns(debit)}
-        datasource={debit}
-        balance={debitBalance.toFormat()}
-        newEntryKey="debit"
-        setPayed={setPayed}
-        onClickPayed={markAsPayed}
-      />
-    </div>
+      <>
+        {!subscriptionHandle ?
+            <Spin />
+        :
+            <div>
+              <DashboardTable
+                  title="Credit"
+                  subtitle="every operation that adds account balance"
+                  columns={columns(credit)}
+                  datasource={credit}
+                  balance={creditBalance.toFormat()}
+                  newEntryKey="credit"
+                  setPayed={setReceived}
+                  onClickPayed={markAsPayed}
+              />
+              <DashboardTable
+                  title="Debit"
+                  subtitle="every operation that subtracts account balance"
+                  columns={columns(debit)}
+                  datasource={debit}
+                  balance={debitBalance.toFormat()}
+                  newEntryKey="debit"
+                  setPayed={setPayed}
+                  onClickPayed={markAsPayed}
+              />
+            </div>
+        }
+
+      </>
   );
 };

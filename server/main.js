@@ -9,7 +9,6 @@ import accounts from './src/publications/accounts'
 import categories from './src/publications/categories'
 import dashboardData from './src/publications/dashboardData'
 
-
 Meteor.startup(() => {
   const basicAuth = new HttpBasicAuth('admin', 'teste');
   basicAuth.protect();
