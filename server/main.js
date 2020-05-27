@@ -5,6 +5,9 @@ import { Accounts } from '/imports/api/accounts';
 import { AccountingEntries } from '/imports/api/accountingEntries';
 import { Categories } from '/imports/api/categories';
 import { InstallmentsCollection } from '/imports/api/installments';
+import accounts from './src/publications/accounts'
+import categories from './src/publications/categories'
+import dashboardData from './src/publications/dashboardData'
 
 Meteor.startup(() => {
   const basicAuth = new HttpBasicAuth('admin', 'teste');

@@ -1,44 +1,28 @@
-import React, { useState } from 'react';
+import React from 'react';
 // eslint-disable-next-line import/no-unresolved
-import { useTracker } from 'meteor/react-meteor-data';
+import {useTracker} from 'meteor/react-meteor-data';
 
 import keyBy from 'lodash.keyby';
 import Dinero from 'dinero.js';
-import moment from 'moment';
-import { AccountingEntries } from '../../api/accountingEntries';
-import {
-  getInstallmentNumber,
-  InstallmentsCollection,
-} from '../../api/installments';
-import { Accounts } from '../../api/accounts';
-import { Categories } from '../../api/categories';
+import {getInstallmentNumber,} from '../../api/installments';
 
-export function useDashboardData(startRange, endRange, filters = {}) {
+export function useDashboardData(
+    creditEntries,
+    debitEntries,
+    accountsEntries,
+    categoriesEntries,
+    installmentsEntries,
+    startRange,
+    endRange,
+    filters = {}) {
   const {
-    credit,
-    debit,
     balance,
     debitBalance,
     creditBalance,
   } = useTracker(() => {
     const { payed = false, received = false } = filters;
-    const dateQuery = {
-      dueDate: { $gte: startRange.toDate(), $lte: endRange.toDate() },
-    };
-
-    const creditEntries = AccountingEntries.find({
-      credit: true,
-      payed: received,
-      ...dateQuery,
-    }).fetch();
-    const debitEntries = AccountingEntries.find({
-      credit: false,
-      payed,
-      ...dateQuery,
-    }).fetch();
-    const installments = InstallmentsCollection.find().fetch();
-    const accounts = keyBy(Accounts.find().fetch(), '_id');
-    const categories = keyBy(Categories.find().fetch(), '_id');
+    const accounts = keyBy(accountsEntries, '_id')
+    const categories = keyBy(categoriesEntries, '_id')
 
     const mapper = obj => ({
       ...obj,
@@ -68,7 +52,7 @@ export function useDashboardData(startRange, endRange, filters = {}) {
 
     const mappedCredit = creditEntries.map(mapper);
     const mappedDebit = debitEntries
-      .concat(installments.map(installmentToEntryMapper).filter(Boolean))
+      .concat(installmentsEntries.map(installmentToEntryMapper).filter(Boolean))
       .map(mapper);
     let dineroBalance = new Dinero({ amount: 0 });
     let creditDinero = new Dinero({ amount: 0 });
@@ -88,10 +72,15 @@ export function useDashboardData(startRange, endRange, filters = {}) {
       creditBalance: creditDinero,
       debitBalance: debitDinero,
     };
-  }, [startRange, endRange, filters]);
+  }, [creditEntries,
+    debitEntries,
+    installmentsEntries,
+    categoriesEntries,
+    accountsEntries,
+    startRange,
+    endRange,
+    filters]);
   return {
-    credit,
-    debit,
     balance,
     debitBalance,
     creditBalance,
