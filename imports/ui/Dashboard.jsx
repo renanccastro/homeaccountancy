@@ -190,7 +190,7 @@ export const Dashboard = ({
       <>
         {!subscriptionHandle.ready() ?
             <div>
-              <Spin/>
+              <Spin tip="Loading..." />
             </div>
         :
             <div>

@@ -14,6 +14,8 @@ import Spin from 'antd/es/spin';
 import { Categories } from '../api/categories';
 import { Accounts } from '../api/accounts';
 import { AccountingEntries } from '../api/accountingEntries';
+import {CreditEntries, DebitEntries} from "../api/client/creditAndDebit";
+import {InstallmentsCollection} from "../api/installments";
 
 const { Option } = Select;
 const layout = {
@@ -30,17 +32,17 @@ export const AddAccountingEntry = ({ format, id }) => {
   const formRef = useRef();
   const [accountId, setAccountId] = useState(null);
 
-  const { categories, accounts, accountsMap, existingEntry } = useTracker(
-    () => {
-      const accountsData = Accounts.find().fetch();
-      return {
-        categories: Categories.find().fetch(),
-        accounts: accountsData,
-        accountsMap: keyBy(accountsData, '_id'),
-        existingEntry: AccountingEntries.findOne(id),
-      };
+  const { categories, accounts, accountsMap, existingEntry, subscriptionHandle } = useTracker(() => {
+    const handle = Meteor.subscribe("newAccounting.fetchAll");
+    const accountsData = Accounts.find().fetch();
+    return {
+      subscriptionHandle: handle,
+      accounts: Accounts.find().fetch(),
+      categories: Categories.find().fetch(),
+      accountsMap: keyBy(accountsData, '_id'),
+      existingEntry: AccountingEntries.findOne(id),
     }
-  );
+  })
 
   const onAccountChange = value => {
     const accountDueDate = accountsMap[value].dueDate;
@@ -100,7 +102,7 @@ export const AddAccountingEntry = ({ format, id }) => {
         dueDate: moment(),
         payed: false,
       };
-  if (id && !existingEntry) {
+  if (!subscriptionHandle.ready() || (id && !existingEntry)) {
     return <Spin tip="Loading..." />;
   }
   return (
