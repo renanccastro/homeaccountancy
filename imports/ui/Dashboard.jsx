@@ -23,7 +23,6 @@ import AndroidOutlined from '@ant-design/icons/lib/icons/AndroidOutlined';
 import { Categories } from '../api/categories';
 import { AccountingEntries } from '../api/accountingEntries';
 import { Accounts } from "../api/accounts";
-import { CreditEntries, DebitEntries} from "../api/client/creditAndDebit";
 import { useDashboardData } from './helpers/dashboardHelpers';
 import { DashboardTable } from '../components/DashboardTable';
 import {
@@ -52,19 +51,23 @@ export const Dashboard = ({
     received,
   }
 
-  const {credit, debit, accountsArray, categoriesArray, installments, subscriptionHandle} = useTracker(() => {
+  const {credit, debit, accountsArray, categoriesArray, installments, isLoading} = useTracker(() => {
     const handle = Meteor.subscribe("dashboardData.fetchAll", filters);
       return {
-        subscriptionHandle: handle,
-        credit: CreditEntries.find().fetch(),
-        debit: DebitEntries.find().fetch(),
+        isLoading: !handle.ready(),
+        credit: AccountingEntries.find({
+          credit: true,
+        }).fetch(),
+        debit: AccountingEntries.find({
+          credit: false,
+        }).fetch(),
         accountsArray: Accounts.find().fetch(),
         categoriesArray: Categories.find().fetch(),
         installments: InstallmentsCollection.find().fetch(),
       }
-  })
+  }, [filters])
 
-  const { debitBalance, creditBalance} = useDashboardData(
+  const {debitBalance, creditBalance} = useDashboardData(
       credit,
       debit,
       accountsArray,
@@ -188,10 +191,8 @@ export const Dashboard = ({
 
   return (
       <>
-        {!subscriptionHandle.ready() ?
-            <div>
+        {isLoading ?
               <Spin tip="Loading..." />
-            </div>
         :
             <div>
               <DashboardTable
