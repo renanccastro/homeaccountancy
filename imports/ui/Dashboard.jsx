@@ -125,7 +125,8 @@ export const Dashboard = ({
         return account.name
       },
       defaultSortOrder: 'descend',
-      sorter: (a, b) => a.account.name - b.account.name,
+      //TODO:fix sorter
+      sorter: (a, b) => a.account?.name - b.account?.name,
       filters: entries.map(({ account }) => ({
         text: account?.name,
         value: account?.name,

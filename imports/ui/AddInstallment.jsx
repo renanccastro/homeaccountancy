@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Checkbox, Form, Input } from 'antd';
+import { Button, Checkbox, Form, Input, message } from 'antd';
 import { useNavigate } from '@reach/router';
 import Select from 'antd/es/select';
 import { useTracker } from 'meteor/react-meteor-data';
@@ -11,6 +11,7 @@ import keyBy from 'lodash.keyby';
 import { InstallmentsCollection } from '../api/installments';
 import { Categories } from '../api/categories';
 import { Accounts } from '../api/accounts';
+import {addInstallment} from "../api/methods/addInstallmentMethods";
 
 const { Option } = Select;
 const layout = {
@@ -33,18 +34,9 @@ export const AddInstallment = () => {
     };
   });
   const onFinish = ({ startMonth, startDate, ...values }) => {
-    const { dueDate } = accountMap[values.accountId];
-
-    InstallmentsCollection.insert({
-      ...values,
-      startDate: dueDate
-        ? startMonth.set('date', dueDate).toDate()
-        : values.startDate.toDate(),
-      purchaseDate: values.dueDate?.toDate(),
-      finished: false,
-      payedInstallments: [],
-    });
+    addInstallment.call(startMonth, startDate, ...values);
     navigate('../', { replace: true });
+    message.success("Added successfully!");
   };
 
   const onAccountChange = value => {
@@ -52,6 +44,7 @@ export const AddInstallment = () => {
   };
 
   const onFinishFailed = errorInfo => {
+    message.error("Try again!");
     console.log('Failed:', errorInfo);
   };
 
