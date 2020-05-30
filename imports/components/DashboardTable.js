@@ -18,14 +18,16 @@ export const DashboardTable = ({
 }) => {
   const [selectedRows, setSelectedRows] = useState([]);
   const rowSelection = {
-    selectedRowKeys: selectedRows,
-    onChange: selectedRowKeys => {
-      setSelectedRows(selectedRowKeys);
-    },
+      onChange: (rowKey, selectedRowKeys) => {
+          setSelectedRows(selectedRowKeys)
+      },
   };
   const hasSelected = selectedRows.length > 0;
 
-  const onClick = () => onClickPayed(selectedRows);
+  const onClick = () => {
+      onClickPayed(selectedRows)
+      setSelectedRows([]);
+  };
   return (
     <div>
       <PageHeader

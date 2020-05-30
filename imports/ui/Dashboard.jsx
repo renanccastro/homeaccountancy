@@ -21,6 +21,7 @@ import Tabs from 'antd/es/tabs';
 import AppleOutlined from '@ant-design/icons/lib/icons/AppleOutlined';
 import AndroidOutlined from '@ant-design/icons/lib/icons/AndroidOutlined';
 import { Categories } from '../api/categories';
+import { markAsPayed } from "../api/methods/dashboardMethods";
 import { AccountingEntries } from '../api/accountingEntries';
 import { Accounts } from "../api/accounts";
 import { useDashboardData } from './helpers/dashboardHelpers';
@@ -78,19 +79,9 @@ export const Dashboard = ({
       { payed, received }
   );
 
-  const markAsPayed = rows => {
-    rows.forEach(_id => {
-      const accountingEntry = AccountingEntries.findOne(_id);
-      if (!accountingEntry) {
-        const { startDate } = InstallmentsCollection.findOne(_id);
-        const installment = getInstallmentNumber(startDate, endRange);
-        InstallmentsCollection.update(_id, {
-          payedInstallments: { $pushToSet: installment },
-        });
-      } else {
-        AccountingEntries.update(_id, { $set: { payed: true } });
-      }
-    });
+  const markAsPayedClient = rows => {
+    const endDate = endRange.toDate();
+    markAsPayed.call({rows, endDate})
   };
 
   const columns = entries => [
@@ -203,7 +194,7 @@ export const Dashboard = ({
                   balance={creditBalance.toFormat()}
                   newEntryKey="credit"
                   setPayed={setReceived}
-                  onClickPayed={markAsPayed}
+                  onClickPayed={markAsPayedClient}
               />
               <DashboardTable
                   title="Debit"
@@ -213,7 +204,7 @@ export const Dashboard = ({
                   balance={debitBalance.toFormat()}
                   newEntryKey="debit"
                   setPayed={setPayed}
-                  onClickPayed={markAsPayed}
+                  onClickPayed={markAsPayedClient}
               />
             </div>
         }
