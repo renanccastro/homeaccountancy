@@ -18,15 +18,15 @@ export const DashboardTable = ({
 }) => {
   const [selectedRows, setSelectedRows] = useState([]);
   const rowSelection = {
-      onChange: (rowKey, selectedRowKeys) => {
-          setSelectedRows(selectedRowKeys)
-      },
+    onChange: (rowKey, selectedRowKeys) => {
+      setSelectedRows(selectedRowKeys);
+    },
   };
   const hasSelected = selectedRows.length > 0;
 
   const onClick = () => {
-      onClickPayed(selectedRows)
-      setSelectedRows([]);
+    onClickPayed(selectedRows.map((row) => row._id));
+    setSelectedRows([]);
   };
   return (
     <div>
@@ -54,7 +54,7 @@ export const DashboardTable = ({
 
       <Tabs
         defaultActiveKey="1"
-        onChange={tabKey => {
+        onChange={(tabKey) => {
           setPayed(tabKey === '2');
           setSelectedRows([]);
         }}

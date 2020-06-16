@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Checkbox, Form, Input, message } from 'antd';
+import { Button, Form, Input, message } from 'antd';
 import { useNavigate } from '@reach/router';
 import Select from 'antd/es/select';
 import { useTracker } from 'meteor/react-meteor-data';
@@ -8,10 +8,9 @@ import DatePicker from 'antd/es/date-picker';
 import moment from 'moment';
 import Dinero from 'dinero.js';
 import keyBy from 'lodash.keyby';
-import { InstallmentsCollection } from '../api/installments';
 import { Categories } from '../api/categories';
 import { Accounts } from '../api/accounts';
-import {addInstallment} from "../api/methods/addInstallmentMethods";
+import { addInstallment } from '../api/methods/addInstallmen';
 
 const { Option } = Select;
 const layout = {
@@ -36,15 +35,14 @@ export const AddInstallment = () => {
   const onFinish = ({ startMonth, startDate, ...values }) => {
     addInstallment.call(startMonth, startDate, ...values);
     navigate('../', { replace: true });
-    message.success("Added successfully!");
   };
 
-  const onAccountChange = value => {
+  const onAccountChange = (value) => {
     setAccountId(value);
   };
 
-  const onFinishFailed = errorInfo => {
-    message.error("Try again!");
+  const onFinishFailed = (errorInfo) => {
+    message.error('Try again!');
     console.log('Failed:', errorInfo);
   };
 
@@ -119,11 +117,11 @@ export const AddInstallment = () => {
       >
         <InputNumber
           style={{ width: '100%' }}
-          formatter={value => {
+          formatter={(value) => {
             console.log(value);
             return new Dinero({ amount: parseInt(value, 10) || 0 }).toFormat();
           }}
-          parser={value => {
+          parser={(value) => {
             return value.replace(/[^0-9]/g, '');
           }}
         />

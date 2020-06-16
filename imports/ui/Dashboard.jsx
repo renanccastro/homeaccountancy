@@ -11,7 +11,8 @@ import {
   Table,
   Space,
   Statistic,
-  Menu, Spin,
+  Menu,
+  Spin,
 } from 'antd';
 
 import Dinero from 'dinero.js';
@@ -21,15 +22,16 @@ import Tabs from 'antd/es/tabs';
 import AppleOutlined from '@ant-design/icons/lib/icons/AppleOutlined';
 import AndroidOutlined from '@ant-design/icons/lib/icons/AndroidOutlined';
 import { Categories } from '../api/categories';
-import { markAsPayed } from "../api/methods/dashboardMethods";
+import { markAsPayed } from '../api/methods/markAsPayed';
 import { AccountingEntries } from '../api/accountingEntries';
-import { Accounts } from "../api/accounts";
+import { Accounts } from '../api/accounts';
 import { useDashboardData } from './helpers/dashboardHelpers';
 import { DashboardTable } from '../components/DashboardTable';
 import {
   getInstallmentNumber,
   InstallmentsCollection,
 } from '../api/installments';
+import { deleteAccountingEntry } from '../api/methods/deleteAccountingEntry';
 
 const { TabPane } = Tabs;
 
@@ -50,79 +52,86 @@ export const Dashboard = ({
     endRange: endRange.toDate(),
     payed,
     received,
-  }
-
-  const {credit, debit, accountsArray, categoriesArray, installments, isLoading} = useTracker(() => {
-    const handle = Meteor.subscribe("dashboardData.fetchAll", filters);
-      return {
-        isLoading: !handle.ready(),
-        credit: AccountingEntries.find({
-          credit: true,
-        }).fetch(),
-        debit: AccountingEntries.find({
-          credit: false,
-        }).fetch(),
-        accountsArray: Accounts.find().fetch(),
-        categoriesArray: Categories.find().fetch(),
-        installments: InstallmentsCollection.find().fetch(),
-      }
-  }, [filters])
-
-  const {debitBalance, creditBalance} = useDashboardData(
-      credit,
-      debit,
-      accountsArray,
-      categoriesArray,
-      installments,
-      startRange,
-      endRange,
-      { payed, received }
-  );
-
-  const markAsPayedClient = rows => {
-    const endDate = endRange.toDate();
-    markAsPayed.call({rows, endDate})
   };
 
-  const columns = entries => [
+  const {
+    credit,
+    debit,
+    accountsArray,
+    categoriesArray,
+    installments,
+    isLoading,
+  } = useTracker(() => {
+    const handle = Meteor.subscribe('dashboardData.fetchAll', filters);
+    return {
+      isLoading: !handle.ready(),
+      credit: AccountingEntries.find({
+        credit: true,
+      }).fetch(),
+      debit: AccountingEntries.find({
+        credit: false,
+      }).fetch(),
+      accountsArray: Accounts.find().fetch(),
+      categoriesArray: Categories.find().fetch(),
+      installments: InstallmentsCollection.find().fetch(),
+    };
+  }, [filters]);
+
+  const { debitBalance, creditBalance } = useDashboardData(
+    credit,
+    debit,
+    accountsArray,
+    categoriesArray,
+    installments,
+    startRange,
+    endRange,
+    { payed, received }
+  );
+
+  const markAsPayedClient = (idsRows) => {
+    const endDate = endRange.toDate();
+    markAsPayed.call({ idsRows, endDate });
+  };
+
+  const columns = (entries) => [
     {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
       sorter: (a, b) => a.name < b.name,
-      render: text => text,
+      render: (text) => text,
     },
     {
       title: 'Categories',
       key: 'categoryIds',
       dataIndex: 'categoryIds',
-      render: categorieIdArray => {
+      render: (categorieIdArray) => {
         let names = [];
-        categorieIdArray.forEach(catId => {
-          const categorie = categoriesArray.find(cat => cat._id == catId);
-          names.push(categorie.name)
-        })
+        categorieIdArray.forEach((catId) => {
+          const categorie = categoriesArray.find((cat) => cat._id == catId);
+          names.push(categorie.name);
+        });
         return (
-            <>
-              {names.map(name => {
-                const color = name.length > 5 ? 'geekblue' : 'green';
-                return (
-                    <Tag color={color} key={name}>
-                      {name.toUpperCase()}
-                    </Tag>
-                )
-              })}
-            </>
-        )
+          <>
+            {names.map((name) => {
+              const color = name.length > 5 ? 'geekblue' : 'green';
+              return (
+                <Tag color={color} key={name}>
+                  {name.toUpperCase()}
+                </Tag>
+              );
+            })}
+          </>
+        );
       },
     },
     {
       title: 'Account',
       dataIndex: 'accountId',
       key: 'accountId',
-      render: accountId => {
-        const account = accountsArray.find(acc => acc._id == accountId);
-        return account.name
+      render: (accountId) => {
+        const account = accountsArray.find((acc) => acc._id == accountId);
+        return account.name;
       },
       defaultSortOrder: 'descend',
       //TODO:fix sorter
@@ -151,19 +160,20 @@ export const Dashboard = ({
       key: 'value',
       defaultSortOrder: 'descend',
       sorter: (a, b) => a.money.greaterThan(b.money),
-      render: value => Dinero({ amount: value }).toFormat(),
+      render: (value) => Dinero({ amount: value }).toFormat(),
     },
     {
       title: 'Action',
       key: 'action',
-      render: (text, record) => (
+      render: (record) => (
         <Space size="middle">
           <a
             onClick={() => {
+              const { _id } = record;
               // eslint-disable-next-line no-restricted-globals
               const confirmation = confirm('Are you sure?');
               if (confirmation) {
-                AccountingEntries.remove(record._id);
+                deleteAccountingEntry.run(_id);
               }
             }}
           >
@@ -180,36 +190,34 @@ export const Dashboard = ({
     },
   ];
 
-
   return (
-      <>
-        {isLoading ?
-              <Spin tip="Loading..." />
-        :
-            <div>
-              <DashboardTable
-                  title="Credit"
-                  subtitle="every operation that adds account balance"
-                  columns={columns(credit)}
-                  datasource={credit}
-                  balance={creditBalance.toFormat()}
-                  newEntryKey="credit"
-                  setPayed={setReceived}
-                  onClickPayed={markAsPayedClient}
-              />
-              <DashboardTable
-                  title="Debit"
-                  subtitle="every operation that subtracts account balance"
-                  columns={columns(debit)}
-                  datasource={debit}
-                  balance={debitBalance.toFormat()}
-                  newEntryKey="debit"
-                  setPayed={setPayed}
-                  onClickPayed={markAsPayedClient}
-              />
-            </div>
-        }
-
-      </>
+    <>
+      {isLoading ? (
+        <Spin tip="Loading..." />
+      ) : (
+        <div>
+          <DashboardTable
+            title="Credit"
+            subtitle="every operation that adds account balance"
+            columns={columns(credit)}
+            datasource={credit}
+            balance={creditBalance.toFormat()}
+            newEntryKey="credit"
+            setPayed={setReceived}
+            onClickPayed={markAsPayedClient}
+          />
+          <DashboardTable
+            title="Debit"
+            subtitle="every operation that subtracts account balance"
+            columns={columns(debit)}
+            datasource={debit}
+            balance={debitBalance.toFormat()}
+            newEntryKey="debit"
+            setPayed={setPayed}
+            onClickPayed={markAsPayedClient}
+          />
+        </div>
+      )}
+    </>
   );
 };

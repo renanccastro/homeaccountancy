@@ -5,10 +5,11 @@ import { Accounts } from '/imports/api/accounts';
 import { AccountingEntries } from '/imports/api/accountingEntries';
 import { Categories } from '/imports/api/categories';
 import { InstallmentsCollection } from '/imports/api/installments';
-import newAccountingEntry from './src/publications/newAccountingEntry'
-import dashboardData from './src/publications/dashboardData'
-import { markAsPayed } from "../imports/api/methods/dashboardMethods";
-import { addInstallment } from "../imports/api/methods/addInstallmentMethods";
+import newAccountingEntry from './src/publications/newAccountingEntry';
+import dashboardData from './src/publications/dashboardData';
+import { markAsPayed } from '../imports/api/methods/markAsPayed';
+import { deleteAccountingEntry } from '../imports/api/methods/deleteAccountingEntry';
+import { addInstallment } from '../imports/api/methods/addInstallmen';
 
 Meteor.startup(() => {
   const basicAuth = new HttpBasicAuth('admin', 'teste');

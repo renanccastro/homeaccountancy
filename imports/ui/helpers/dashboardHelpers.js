@@ -1,37 +1,34 @@
 import React from 'react';
 // eslint-disable-next-line import/no-unresolved
-import {useTracker} from 'meteor/react-meteor-data';
+import { useTracker } from 'meteor/react-meteor-data';
 
 import keyBy from 'lodash.keyby';
 import Dinero from 'dinero.js';
-import {getInstallmentNumber,} from '../../api/installments';
+import { getInstallmentNumber } from '../../api/installments';
 
 export function useDashboardData(
-    creditEntries,
-    debitEntries,
-    accountsEntries,
-    categoriesEntries,
-    installmentsEntries,
-    startRange,
-    endRange,
-    filters = {}) {
-  const {
-    balance,
-    debitBalance,
-    creditBalance,
-  } = useTracker(() => {
+  creditEntries,
+  debitEntries,
+  accountsEntries,
+  categoriesEntries,
+  installmentsEntries,
+  startRange,
+  endRange,
+  filters = {}
+) {
+  const { balance, debitBalance, creditBalance } = useTracker(() => {
     const { payed = false, received = false } = filters;
-    const accounts = keyBy(accountsEntries, '_id')
-    const categories = keyBy(categoriesEntries, '_id')
+    const accounts = keyBy(accountsEntries, '_id');
+    const categories = keyBy(categoriesEntries, '_id');
 
-    const mapper = obj => ({
+    const mapper = (obj) => ({
       ...obj,
       key: obj._id,
       money: new Dinero({ amount: obj.value }),
       account: accounts[obj.accountId],
-      categories: obj.categoryIds.map(_id => categories[_id]),
+      categories: obj.categoryIds.map((_id) => categories[_id]),
     });
-    const installmentToEntryMapper = obj => {
+    const installmentToEntryMapper = (obj) => {
       const { startDate } = obj;
       const installment = getInstallmentNumber(startDate, endRange);
       if (installment > obj.installments || endRange.isBefore(startDate)) {
@@ -46,7 +43,7 @@ export function useDashboardData(
         payed: true,
         money: new Dinero({ amount: obj.value }),
         account: accounts[obj.accountId],
-        categories: obj.categoryIds.map(_id => categories[_id]),
+        categories: obj.categoryIds.map((_id) => categories[_id]),
       };
     };
 
@@ -72,14 +69,16 @@ export function useDashboardData(
       creditBalance: creditDinero,
       debitBalance: debitDinero,
     };
-  }, [creditEntries,
+  }, [
+    creditEntries,
     debitEntries,
     installmentsEntries,
     categoriesEntries,
     accountsEntries,
     startRange,
     endRange,
-    filters]);
+    filters,
+  ]);
   return {
     balance,
     debitBalance,

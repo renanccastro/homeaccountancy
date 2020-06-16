@@ -16,10 +16,10 @@ export const Installments = () => {
     const accounts = keyBy(Accounts.find().fetch(), '_id');
     const categories = keyBy(Categories.find().fetch(), '_id');
 
-    return all.map(obj => ({
+    return all.map((obj) => ({
       ...obj,
       account: accounts[obj.accountId],
-      categories: obj.categoryIds.map(_id => categories[_id]),
+      categories: obj.categoryIds.map((_id) => categories[_id]),
     }));
   });
   const columns = [
@@ -27,13 +27,13 @@ export const Installments = () => {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
-      render: text => text,
+      render: (text) => text,
     },
     {
       title: 'Categories',
       key: 'categories',
       dataIndex: 'categories',
-      render: categories => (
+      render: (categories) => (
         <>
           {categories?.map(({ name }) => {
             const color = name.length > 5 ? 'geekblue' : 'green';
@@ -50,7 +50,7 @@ export const Installments = () => {
       title: 'Account',
       dataIndex: 'account',
       key: 'account',
-      render: account => <a>{account?.name}</a>,
+      render: (account) => <a>{account?.name}</a>,
       defaultSortOrder: 'descend',
       sorter: (a, b) => a.account.name - b.account.name,
       filters: installments?.map(({ account }) => ({
@@ -68,7 +68,7 @@ export const Installments = () => {
       dataIndex: 'start',
       key: 'start',
       defaultSortOrder: 'descend',
-      render: o => moment(o).format('DD/MM/YYYY'),
+      render: (o) => moment(o).format('DD/MM/YYYY'),
       sorter: (a, b) => a.start - b.start,
     },
     {

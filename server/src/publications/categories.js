@@ -1,5 +1,5 @@
-import {Categories} from "../../../imports/api/categories";
+import { Categories } from '../../../imports/api/categories';
 
-Meteor.publish("categories.findAll", () => {
-    return Categories.find();
-})
+Meteor.publish('categories.findAll', () => {
+  return Categories.find();
+});
