@@ -17,7 +17,6 @@ export function useDashboardData(
   filters = {}
 ) {
   const { balance, debitBalance, creditBalance } = useTracker(() => {
-    const { payed = false, received = false } = filters;
     const accounts = keyBy(accountsEntries, '_id');
     const categories = keyBy(categoriesEntries, '_id');
 
@@ -34,7 +33,7 @@ export function useDashboardData(
       if (installment > obj.installments || endRange.isBefore(startDate)) {
         return null;
       }
-      if (payed && !obj.payedInstallments?.includes(installment)) {
+      if (!obj.payedInstallments?.includes(installment)) {
         return null;
       }
       return {
@@ -77,7 +76,6 @@ export function useDashboardData(
     accountsEntries,
     startRange,
     endRange,
-    filters,
   ]);
   return {
     balance,

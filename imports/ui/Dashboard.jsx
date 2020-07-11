@@ -1,36 +1,19 @@
 import React, { useState } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { useTracker } from 'meteor/react-meteor-data';
-import keyBy from 'lodash.keyby';
-import {
-  PageHeader,
-  Tag,
-  Button,
-  Descriptions,
-  Row,
-  Table,
-  Space,
-  Statistic,
-  Menu,
-  Spin,
-} from 'antd';
+import { Space, Spin, Tag } from 'antd';
 
 import Dinero from 'dinero.js';
 import { Link } from '@reach/router';
 import moment from 'moment';
 import Tabs from 'antd/es/tabs';
-import AppleOutlined from '@ant-design/icons/lib/icons/AppleOutlined';
-import AndroidOutlined from '@ant-design/icons/lib/icons/AndroidOutlined';
 import { Categories } from '../api/categories';
 import { markAsPayed } from '../api/methods/markAsPayed';
 import { AccountingEntries } from '../api/accountingEntries';
 import { Accounts } from '../api/accounts';
 import { useDashboardData } from './helpers/dashboardHelpers';
 import { DashboardTable } from '../components/DashboardTable';
-import {
-  getInstallmentNumber,
-  InstallmentsCollection,
-} from '../api/installments';
+import { InstallmentsCollection } from '../api/installments';
 import { deleteAccountingEntry } from '../api/methods/deleteAccountingEntry';
 
 const { TabPane } = Tabs;
@@ -43,15 +26,10 @@ export const Dashboard = ({
   const startRange = moment(start).startOf('month');
   const endRange = moment(start).endOf('month');
 
-  const [received, setReceived] = useState(false);
-  const [payed, setPayed] = useState(false);
-
   const filters = {
     start,
     startRange: startRange.toDate(),
     endRange: endRange.toDate(),
-    payed,
-    received,
   };
 
   const {
@@ -84,8 +62,7 @@ export const Dashboard = ({
     categoriesArray,
     installments,
     startRange,
-    endRange,
-    { payed, received }
+    endRange
   );
 
   const markAsPayedClient = (idsRows) => {
@@ -203,7 +180,6 @@ export const Dashboard = ({
             datasource={credit}
             balance={creditBalance.toFormat()}
             newEntryKey="credit"
-            setPayed={setReceived}
             onClickPayed={markAsPayedClient}
           />
           <DashboardTable
@@ -213,7 +189,6 @@ export const Dashboard = ({
             datasource={debit}
             balance={debitBalance.toFormat()}
             newEntryKey="debit"
-            setPayed={setPayed}
             onClickPayed={markAsPayedClient}
           />
         </div>

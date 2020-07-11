@@ -1,6 +1,7 @@
 import { Button, PageHeader, Row, Statistic, Table } from 'antd';
 import { Link } from '@reach/router';
 import Tabs from 'antd/es/tabs';
+import { useTracker } from 'meteor/react-meteor-data';
 import AppleOutlined from '@ant-design/icons/lib/icons/AppleOutlined';
 import AndroidOutlined from '@ant-design/icons/lib/icons/AndroidOutlined';
 import React, { useState } from 'react';
@@ -12,11 +13,17 @@ export const DashboardTable = ({
   newEntryKey,
   columns,
   datasource,
-  setPayed,
   balance,
   onClickPayed,
 }) => {
   const [selectedRows, setSelectedRows] = useState([]);
+  const [payed, setPayed] = useState(false);
+  const dataFiltered = useTracker(() => {
+    return datasource.filter((currentValue) =>
+      payed ? currentValue.payed : !currentValue.payed
+    );
+  }, [payed]);
+
   const rowSelection = {
     onChange: (rowKey, selectedRowKeys) => {
       setSelectedRows(selectedRowKeys);
@@ -71,7 +78,7 @@ export const DashboardTable = ({
           <Table
             columns={columns}
             rowSelection={rowSelection}
-            dataSource={datasource}
+            dataSource={dataFiltered}
           />
         </TabPane>
         <TabPane
@@ -86,7 +93,7 @@ export const DashboardTable = ({
           <Table
             columns={columns}
             rowSelection={rowSelection}
-            dataSource={datasource}
+            dataSource={dataFiltered}
           />
         </TabPane>
       </Tabs>
