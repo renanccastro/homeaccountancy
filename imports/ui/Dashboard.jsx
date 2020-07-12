@@ -13,10 +13,11 @@ import { AccountingEntries } from '../api/accountingEntries';
 import { Accounts } from '../api/accounts';
 import { useDashboardData } from './helpers/dashboardHelpers';
 import { DashboardTable } from '../components/DashboardTable';
-import { InstallmentsCollection } from '../api/installments';
+import {
+  getInstallmentNumber,
+  InstallmentsCollection,
+} from '../api/installments';
 import { deleteAccountingEntry } from '../api/methods/deleteAccountingEntry';
-
-const { TabPane } = Tabs;
 
 export const Dashboard = ({
   year = moment().format('YYYY'),
@@ -131,8 +132,9 @@ export const Dashboard = ({
     },
     {
       title: '# of Installments',
-      dataIndex: 'installment',
       key: 'installment',
+      render: ({ dueDate, purchaseDate }, record) =>
+        getInstallmentNumber(purchaseDate, dueDate),
     },
     {
       title: 'Due date',
