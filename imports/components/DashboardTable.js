@@ -5,6 +5,7 @@ import { useTracker } from 'meteor/react-meteor-data';
 import AppleOutlined from '@ant-design/icons/lib/icons/AppleOutlined';
 import AndroidOutlined from '@ant-design/icons/lib/icons/AndroidOutlined';
 import React, { useState } from 'react';
+import { markAsPayed } from '../api/methods/markAsPayed';
 
 const { TabPane } = Tabs;
 export const DashboardTable = ({
@@ -35,6 +36,7 @@ export const DashboardTable = ({
     onClickPayed(selectedRows.map((row) => row._id));
     setSelectedRows([]);
   };
+
   return (
     <div>
       <PageHeader
@@ -51,7 +53,11 @@ export const DashboardTable = ({
         </Row>
       </PageHeader>
       <div style={{ marginBottom: 16 }}>
-        <Button type="primary" onClick={onClick} disabled={!hasSelected}>
+        <Button
+          type="primary"
+          onClick={onClick}
+          disabled={!hasSelected || payed}
+        >
           Set Payed
         </Button>
         <span style={{ marginLeft: 8 }}>

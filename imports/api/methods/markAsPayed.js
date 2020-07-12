@@ -5,13 +5,16 @@ import { getInstallmentNumber, InstallmentsCollection } from '../installments';
 
 export const markAsPayed = new ValidatedMethod({
   name: 'markAsPayed',
-  validate({ rows, endDate }) {
-    if (!rows) {
+  validate({ rowsIds, endDate }) {
+    if (!rowsIds) {
       throw new Meteor.Error('Validation error', 'Rows must not be null');
     }
+    if (!endDate) {
+      throw new Meteor.Error('Validation error', 'EndDate must not be null');
+    }
   },
-  run({ idsRows, endDate }) {
-    idsRows.forEach((rowId) => {
+  run({ rowsIds, endDate }) {
+    rowsIds.forEach((rowId) => {
       const accountingEntry = AccountingEntries.findOne(rowId);
       if (!accountingEntry) {
         const { startDate } = InstallmentsCollection.findOne(rowId);

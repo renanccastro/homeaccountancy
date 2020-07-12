@@ -27,7 +27,6 @@ export const Dashboard = ({
   const endRange = moment(start).endOf('month');
 
   const filters = {
-    start,
     startRange: startRange.toDate(),
     endRange: endRange.toDate(),
   };
@@ -65,9 +64,12 @@ export const Dashboard = ({
     endRange
   );
 
-  const markAsPayedClient = (idsRows) => {
-    const endDate = endRange.toDate();
-    markAsPayed.call({ idsRows, endDate });
+  const markAsPayedClient = (rowsIds) => {
+    const obj = {
+      rowsIds,
+      endDate: endRange.toDate(),
+    };
+    markAsPayed.call(obj);
   };
 
   const columns = (entries) => [
