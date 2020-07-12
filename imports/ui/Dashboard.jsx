@@ -77,7 +77,7 @@ export const Dashboard = ({
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
-      sorter: (a, b) => a.name < b.name,
+      sorter: ({ name: a }, { name: b }) => a.localeCompare(b),
       render: (text) => text,
     },
     {
@@ -87,7 +87,7 @@ export const Dashboard = ({
       render: (categorieIdArray) => {
         let names = [];
         categorieIdArray.forEach((catId) => {
-          const categorie = categoriesArray.find((cat) => cat._id == catId);
+          const categorie = categoriesArray.find((cat) => cat._id === catId);
           names.push(categorie.name);
         });
         return (
@@ -105,20 +105,29 @@ export const Dashboard = ({
       },
     },
     {
+      // TODO ----> re-render after use set payed button.
       title: 'Account',
       dataIndex: 'accountId',
       key: 'accountId',
       render: (accountId) => {
-        const account = accountsArray.find((acc) => acc._id == accountId);
+        const account = accountsArray.find((acc) => acc._id === accountId);
         return account.name;
       },
       defaultSortOrder: 'descend',
-      //TODO:fix sorter
-      sorter: (a, b) => a.account?.name - b.account?.name,
-      filters: entries.map(({ account }) => ({
-        text: account?.name,
-        value: account?.name,
-      })),
+      sorter: ({ accountId: a }, { accountId: b }) => {
+        const [accountA, accountB] = accountsArray.filter(
+          (acc) => acc._id === a || acc._id === b
+        );
+        return accountA?.name.localeCompare(accountB?.name);
+      },
+      filters: entries.map(({ accountId }) => {
+        const account = accountsArray.find((acc) => acc._id === accountId);
+        return {
+          text: account?.name,
+          value: accountId,
+        };
+      }),
+      onFilter: (value, record) => record.accountId === value,
     },
     {
       title: '# of Installments',
@@ -130,7 +139,7 @@ export const Dashboard = ({
       dataIndex: 'dueDate',
       key: 'dueDate',
       defaultSortOrder: 'descend',
-      sorter: (a, b) => a.start - b.start,
+      sorter: ({ dueDate: a }, { dueDate: b }) => a.valueOf() - b.valueOf(),
       render: (value, entry) => moment(value).format('DD/MM/YYYY'),
     },
     {
@@ -138,7 +147,7 @@ export const Dashboard = ({
       dataIndex: 'value',
       key: 'value',
       defaultSortOrder: 'descend',
-      sorter: (a, b) => a.money.greaterThan(b.money),
+      sorter: ({ value: a }, { value: b }) => a - b,
       render: (value) => Dinero({ amount: value }).toFormat(),
     },
     {
