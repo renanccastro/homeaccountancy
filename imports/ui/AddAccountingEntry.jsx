@@ -16,6 +16,7 @@ import { Accounts } from '../api/accounts';
 import { AccountingEntries } from '../api/accountingEntries';
 import { InstallmentsCollection } from '../api/installments';
 import { addAccounting } from '../api/methods/addAccountingEntry';
+import { SpinnerLoading } from '../components/spinnerLoading/SpinnerLoading';
 
 const { Option } = Select;
 const layout = {
@@ -86,7 +87,7 @@ export const AddAccountingEntry = ({ format, id }) => {
         payed: false,
       };
   if (isLoading || (id && !existingEntry)) {
-    return <Spin tip="Loading..." />;
+    return <SpinnerLoading tip="Loading..." />;
   }
   return (
     <Form

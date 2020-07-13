@@ -12,6 +12,7 @@ import { Categories } from '../api/categories';
 import { Accounts } from '../api/accounts';
 import { addInstallment } from '../api/methods/addInstallment';
 import Spin from 'antd/es/spin';
+import { SpinnerLoading } from '../components/spinnerLoading/SpinnerLoading';
 
 const { Option } = Select;
 const layout = {
@@ -53,7 +54,7 @@ export const AddInstallment = () => {
   };
 
   if (isLoading) {
-    return <Spin tip="Loading..." />;
+    return <SpinnerLoading tip="Loading..." />;
   }
 
   return (

@@ -1,7 +1,6 @@
 import React from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { useTracker } from 'meteor/react-meteor-data';
-import { Spin } from 'antd';
 import moment from 'moment';
 import { Categories } from '../api/categories';
 import { markAsPayed } from '../api/methods/markAsPayed';
@@ -11,6 +10,7 @@ import { useDashboardData } from './helpers/dashboardHelpers';
 import { DashboardTable } from '../components/DashboardTable';
 import { InstallmentsCollection } from '../api/installments';
 import { columns } from '../components/columns';
+import { SpinnerLoading } from '../components/spinnerLoading/SpinnerLoading';
 
 export const Dashboard = ({
   year = moment().format('YYYY'),
@@ -69,7 +69,7 @@ export const Dashboard = ({
   return (
     <>
       {isLoading ? (
-        <Spin tip="Loading..." />
+        <SpinnerLoading tip="Loading..." />
       ) : (
         <div>
           <DashboardTable
