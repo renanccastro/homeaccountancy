@@ -10,7 +10,8 @@ import Dinero from 'dinero.js';
 import keyBy from 'lodash.keyby';
 import { Categories } from '../api/categories';
 import { Accounts } from '../api/accounts';
-import { addInstallment } from '../api/methods/addInstallmen';
+import { addInstallment } from '../api/methods/addInstallment';
+import Spin from 'antd/es/spin';
 
 const { Option } = Select;
 const layout = {
@@ -25,16 +26,21 @@ export const AddInstallment = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [accountId, setAccountId] = useState(null);
-  const { categories, accounts, accountMap } = useTracker(() => {
+
+  const { categories, accounts, accountsMap, isLoading } = useTracker(() => {
+    const handle = Meteor.subscribe('newAccounting.fetchAll');
+    const accountsData = Accounts.find().fetch();
     return {
-      categories: Categories.find().fetch(),
+      isLoading: !handle.ready(),
       accounts: Accounts.find().fetch(),
-      accountMap: keyBy(Accounts.find().fetch(), '_id'),
+      categories: Categories.find().fetch(),
+      accountsMap: keyBy(accountsData, '_id'),
     };
   });
-  const onFinish = ({ startMonth, startDate, ...values }) => {
-    addInstallment.call(startMonth, startDate, ...values);
-    navigate('../', { replace: true });
+
+  const onFinish = ({ startMonth, ...values }) => {
+    addInstallment.call({ startMonth, ...values });
+    navigate('../installments', { replace: true });
   };
 
   const onAccountChange = (value) => {
@@ -45,6 +51,10 @@ export const AddInstallment = () => {
     message.error('Try again!');
     console.log('Failed:', errorInfo);
   };
+
+  if (isLoading) {
+    return <Spin tip="Loading..." />;
+  }
 
   return (
     <Form
@@ -127,7 +137,7 @@ export const AddInstallment = () => {
         />
       </Form.Item>
 
-      {!accountId || !accountMap[accountId].creditCard ? (
+      {!accountId || !accountsMap[accountId].creditCard ? (
         <Form.Item
           label="Start Date"
           name="startDate"

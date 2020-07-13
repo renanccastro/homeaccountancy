@@ -15,6 +15,7 @@ import { Categories } from '../api/categories';
 import { Accounts } from '../api/accounts';
 import { AccountingEntries } from '../api/accountingEntries';
 import { InstallmentsCollection } from '../api/installments';
+import { addAccounting } from '../api/methods/addAccountingEntry';
 
 const { Option } = Select;
 const layout = {
@@ -60,30 +61,7 @@ export const AddAccountingEntry = ({ format, id }) => {
   };
 
   const onFinish = ({ startMonth, ...values }) => {
-    const { dueDate } = accountsMap[values.accountId];
-    const dates = {
-      dueDate: dueDate
-        ? startMonth.set('date', dueDate).toDate()
-        : values.dueDate.toDate(),
-      purchaseDate: values.purchaseDate?.toDate(),
-    };
-
-    if (id) {
-      AccountingEntries.update(id, {
-        $set: {
-          ...values,
-          ...dates,
-          updatedAt: new Date(),
-        },
-      });
-      navigate('/', { replace: true });
-      return;
-    }
-    AccountingEntries.insert({
-      ...values,
-      ...dates,
-      createdAt: new Date(),
-    });
+    addAccounting.call({ startMonth, ...values, id });
     navigate('/', { replace: true });
   };
 

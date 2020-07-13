@@ -9,7 +9,7 @@ import newAccountingEntry from './src/publications/newAccountingEntry';
 import dashboardData from './src/publications/dashboardData';
 import { markAsPayed } from '../imports/api/methods/markAsPayed';
 import { deleteAccountingEntry } from '../imports/api/methods/deleteAccountingEntry';
-import { addInstallment } from '../imports/api/methods/addInstallmen';
+import { addInstallment } from '../imports/api/methods/addInstallment';
 
 Meteor.startup(() => {
   const basicAuth = new HttpBasicAuth('admin', 'teste');
