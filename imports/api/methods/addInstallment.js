@@ -14,8 +14,8 @@ export const addInstallment = new ValidatedMethod({
   },
   // TODO ----> error TypeError: config._d.getTime is not a function
   run({ startMonth, startDate, ...values }) {
-    const { accountMap } = keyBy(Accounts.find().fetch(), '_id');
-    const { dueDate, creditCard } = accountMap[values.accountId];
+    const accountsMap = keyBy(Accounts.find().fetch(), '_id');
+    const { dueDate, creditCard } = accountsMap[values.accountId];
     InstallmentsCollection.insert({
       ...values,
       startDate: creditCard

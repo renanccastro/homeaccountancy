@@ -9,7 +9,7 @@ import { Accounts } from '../api/accounts';
 import { useDashboardData } from './helpers/dashboardHelpers';
 import { DashboardTable } from '../components/DashboardTable';
 import { InstallmentsCollection } from '../api/installments';
-import { columns } from '../components/columns';
+import { ColumnsAccounting } from '../components/columns/ColumnsAccounting';
 import { SpinnerLoading } from '../components/spinnerLoading/SpinnerLoading';
 
 export const Dashboard = ({
@@ -75,7 +75,7 @@ export const Dashboard = ({
           <DashboardTable
             title="Credit"
             subtitle="every operation that adds account balance"
-            columns={columns(credit)}
+            columns={ColumnsAccounting(credit)}
             datasource={credit}
             balance={creditBalance.toFormat()}
             newEntryKey="credit"
@@ -84,7 +84,7 @@ export const Dashboard = ({
           <DashboardTable
             title="Debit"
             subtitle="every operation that subtracts account balance"
-            columns={columns(debit)}
+            columns={ColumnsAccounting(debit)}
             datasource={debit}
             balance={debitBalance.toFormat()}
             newEntryKey="debit"

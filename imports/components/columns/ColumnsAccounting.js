@@ -2,13 +2,13 @@ import React from 'react';
 import { Link } from '@reach/router';
 import { Space, Tag } from 'antd';
 import moment from 'moment';
-import Dinero from 'dinero.js';
-import { deleteAccountingEntry } from '../api/methods/deleteAccountingEntry';
-import { getInstallmentNumber } from '../api/installments';
-import { Categories } from '../api/categories';
-import { Accounts } from '../api/accounts';
+import Dinero from '../../../node_modules/dinero.js/build/esm/dinero';
+import { deleteAccountingEntry } from '../../api/methods/deleteAccountingEntry';
+import { getInstallmentNumber } from '../../api/installments';
+import { Categories } from '../../api/categories';
+import { Accounts } from '../../api/accounts';
 
-export const columns = (entries) => [
+export const ColumnsAccounting = (entries) => [
   {
     title: 'Name',
     dataIndex: 'name',

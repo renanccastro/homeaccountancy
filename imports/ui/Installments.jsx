@@ -3,12 +3,12 @@ import React from 'react';
 import { useTracker } from 'meteor/react-meteor-data';
 import keyBy from 'lodash.keyby';
 
-import { Table, Tag, Space, Button, PageHeader, Row, Statistic } from 'antd';
+import { Button, PageHeader, Row, Statistic, Table } from 'antd';
 import { Link } from '@reach/router';
-import moment from 'moment';
 import { InstallmentsCollection } from '../api/installments';
 import { Accounts } from '../api/accounts';
 import { Categories } from '../api/categories';
+import { ColumnsInstallments } from '../components/columns/ColumnsInstallments';
 
 export const Installments = () => {
   const installments = useTracker(() => {
@@ -22,74 +22,6 @@ export const Installments = () => {
       categories: obj.categoryIds.map((_id) => categories[_id]),
     }));
   });
-  const columns = [
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
-      render: (text) => text,
-    },
-    {
-      title: 'Categories',
-      key: 'categories',
-      dataIndex: 'categories',
-      render: (categories) => (
-        <>
-          {categories?.map(({ name }) => {
-            const color = name.length > 5 ? 'geekblue' : 'green';
-            return (
-              <Tag color={color} key={name}>
-                {name.toUpperCase()}
-              </Tag>
-            );
-          })}
-        </>
-      ),
-    },
-    {
-      title: 'Account',
-      dataIndex: 'account',
-      key: 'account',
-      render: (account) => <a>{account?.name}</a>,
-      defaultSortOrder: 'descend',
-      sorter: (a, b) => a.account.name - b.account.name,
-      filters: installments?.map(({ account }) => ({
-        text: account?.name,
-        value: account?.name,
-      })),
-    },
-    {
-      title: '# of Installments',
-      dataIndex: 'installments',
-      key: 'installments',
-    },
-    {
-      title: 'Start',
-      dataIndex: 'start',
-      key: 'start',
-      defaultSortOrder: 'descend',
-      render: (o) => moment(o).format('DD/MM/YYYY'),
-      sorter: (a, b) => a.start - b.start,
-    },
-    {
-      title: 'Action',
-      key: 'action',
-      render: (text, record) => (
-        <Space size="middle">
-          <a
-            onClick={() => {
-              // eslint-disable-next-line no-restricted-globals
-              if (confirm('Are you sure?')) {
-                InstallmentsCollection.remove(record._id);
-              }
-            }}
-          >
-            Delete
-          </a>
-        </Space>
-      ),
-    },
-  ];
 
   return (
     <div>
@@ -108,7 +40,10 @@ export const Installments = () => {
         </Row>
       </PageHeader>
 
-      <Table columns={columns} dataSource={installments} />
+      <Table
+        columns={ColumnsInstallments(installments)}
+        dataSource={installments}
+      />
     </div>
   );
 };
