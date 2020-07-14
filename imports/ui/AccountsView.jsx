@@ -1,74 +1,41 @@
 import React from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { useTracker } from 'meteor/react-meteor-data';
-
-import { Button, PageHeader, Table, Tabs } from 'antd';
-import { Link } from '@reach/router';
 import { Accounts } from '../api/accounts';
-import {
-  ColumnsAccounts,
-  ColumnsAccountsCreditCard,
-} from '../components/columns/ColumnsAccounts';
+import { ColumnsAccounts } from '../components/columns/ColumnsAccounts';
 import { SpinnerLoading } from '../components/spinnerLoading/SpinnerLoading';
-import AndroidOutlined from '@ant-design/icons/lib/icons/AndroidOutlined';
+import { DashboardTable } from '../components/DashboardTable';
 
-const { TabPane } = Tabs;
+const tabsNames = ['Account', 'Credit Card'];
 
 export const AccountsView = () => {
-  const { accounts, creditCard, isLoading } = useTracker(() => {
+  const { accounts, isLoading } = useTracker(() => {
     const handler = Meteor.subscribe('accounts.findAll');
     return {
       isLoading: !handler.ready(),
-      accounts: Accounts.find({ creditCard: false }).fetch(),
-      creditCard: Accounts.find({ creditCard: true }).fetch(),
+      accounts: Accounts.find().fetch(),
     };
   });
 
-  if (isLoading) {
-    return <SpinnerLoading tip="Loading..." />;
-  }
-
   return (
-    <div>
-      <PageHeader
-        title="Accounts"
-        // tags={<Tag color="blue">Running</Tag>}
-        subTitle="every account you need to control here"
-        extra={[
-          <Button type="primary">
-            <Link to="/new-account/credit-card">+ Add</Link>
-          </Button>,
-        ]}
-      />
-
-      <Tabs defaultActiveKey="1">
-        <TabPane
-          tab={
-            <span>
-              <AndroidOutlined />
-              Bank Accounts
-            </span>
-          }
-          key="1"
-        >
-          <Table columns={ColumnsAccounts(accounts)} dataSource={accounts} />
-        </TabPane>
-
-        <TabPane
-          tab={
-            <span>
-              <AndroidOutlined />
-              Credit Card Accounts
-            </span>
-          }
-          key="2"
-        >
-          <Table
-            columns={ColumnsAccountsCreditCard(creditCard)}
-            dataSource={creditCard}
+    <>
+      {isLoading ? (
+        <SpinnerLoading tip="Loading..." />
+      ) : (
+        <div>
+          <DashboardTable
+            title="Accounts"
+            subtitle="every account you registered appears here"
+            columns={ColumnsAccounts(accounts)}
+            datasource={accounts}
+            newEntryKey="account"
+            enableRowSelection={false}
+            enableBalance={false}
+            tabsNames={tabsNames}
+            filterOptionString="creditCard"
           />
-        </TabPane>
-      </Tabs>
-    </div>
+        </div>
+      )}
+    </>
   );
 };

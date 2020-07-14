@@ -45,12 +45,13 @@ export const Installments = () => {
         <div>
           <DashboardTable
             title="Installments"
-            subtitle="every installments that adds account balance"
+            subtitle="every installments is here"
             columns={ColumnsInstallments(installments)}
             datasource={installments}
             balance={balance}
             enableRowSelection={false}
             newEntryKey="credit-card"
+            filterOptionString="payed"
           />
         </div>
       )}

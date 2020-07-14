@@ -6,24 +6,34 @@ import AppleOutlined from '@ant-design/icons/lib/icons/AppleOutlined';
 import AndroidOutlined from '@ant-design/icons/lib/icons/AndroidOutlined';
 import React, { useState } from 'react';
 import Dinero from 'dinero.js';
+import PropTypes from 'prop-types';
 
 const { TabPane } = Tabs;
 export const DashboardTable = ({
   title,
   subtitle,
   newEntryKey,
+  newEntryFormat,
   columns,
   datasource,
+  filterOptionString,
   onClickPayed,
   enableRowSelection,
+  enableBalance,
+  tabsNames,
 }) => {
   const [selectedRows, setSelectedRows] = useState([]);
-  const [payed, setPayed] = useState(false);
+  const [filterOptionActive, setFilterOptionActive] = useState(false);
+
   const dataFiltered = useTracker(() => {
     return datasource.filter((currentValue) =>
-      payed ? currentValue.payed : !currentValue.payed
+      filterOptionActive
+        ? currentValue[filterOptionString]
+        : !currentValue[filterOptionString]
     );
-  }, [payed]);
+  }, [filterOptionActive]);
+
+  const [nameFirstTab, nameSecondTab] = tabsNames;
 
   const rowSelection = enableRowSelection
     ? {
@@ -36,6 +46,9 @@ export const DashboardTable = ({
   const hasSelected = selectedRows.length > 0;
 
   const balance = useTracker(() => {
+    if (!enableBalance) {
+      return null;
+    }
     let dineroBalance = new Dinero({ amount: 0 });
     dataFiltered.forEach(({ value }) => {
       dineroBalance = dineroBalance.add(new Dinero({ amount: value }));
@@ -55,13 +68,15 @@ export const DashboardTable = ({
         subTitle={subtitle}
         extra={[
           <Button key="3" type="primary">
-            <Link to={`/new-accounting-entry/${newEntryKey}`}>+ Add</Link>
+            <Link to={`/${newEntryFormat}/${newEntryKey}`}>+ Add</Link>
           </Button>,
         ]}
       >
-        <Row>
-          <Statistic title="Subtotal" value={balance} />
-        </Row>
+        {enableBalance ? (
+          <Row>
+            <Statistic title="Subtotal" value={balance} />
+          </Row>
+        ) : null}
       </PageHeader>
 
       {onClickPayed && rowSelection ? (
@@ -69,7 +84,7 @@ export const DashboardTable = ({
           <Button
             type="primary"
             onClick={onClick}
-            disabled={!hasSelected || payed}
+            disabled={!hasSelected || filterOptionActive}
           >
             Set Payed
           </Button>
@@ -82,7 +97,7 @@ export const DashboardTable = ({
       <Tabs
         defaultActiveKey="1"
         onChange={(tabKey) => {
-          setPayed(tabKey === '2');
+          setFilterOptionActive(tabKey === '2');
           setSelectedRows([]);
         }}
       >
@@ -90,7 +105,7 @@ export const DashboardTable = ({
           tab={
             <span>
               <AppleOutlined />
-              Pending
+              {nameFirstTab}
             </span>
           }
           key="1"
@@ -106,7 +121,7 @@ export const DashboardTable = ({
           tab={
             <span>
               <AndroidOutlined />
-              Payed
+              {nameSecondTab}
             </span>
           }
           key="2"
@@ -123,6 +138,23 @@ export const DashboardTable = ({
   );
 };
 
+DashboardTable.propTypes = {
+  title: PropTypes.string.isRequired,
+  subtitle: PropTypes.string.isRequired,
+  newEntryKey: PropTypes.string.isRequired,
+  newEntryFormat: PropTypes.string.isRequired,
+  columns: PropTypes.object.isRequired,
+  datasource: PropTypes.arrayOf(PropTypes.object).isRequired,
+  filterOptionString: PropTypes.string.isRequired,
+  onClickPayed: PropTypes.func,
+  enableRowSelection: PropTypes.bool,
+  enableBalance: PropTypes.bool,
+  tabsNames: PropTypes.arrayOf(PropTypes.string),
+};
+
 DashboardTable.defaultProps = {
   enableRowSelection: true,
+  enableBalance: true,
+  tabsNames: ['Pending', 'Payed'],
+  onClickPayed: undefined,
 };

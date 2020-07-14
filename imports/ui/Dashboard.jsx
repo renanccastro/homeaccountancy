@@ -80,6 +80,8 @@ export const Dashboard = ({
             balance={creditBalance.toFormat()}
             newEntryKey="credit"
             onClickPayed={markAsPayedClient}
+            newEntryFormat="new-accounting-entry"
+            filterOptionString="payed"
           />
           <DashboardTable
             title="Debit"
@@ -89,6 +91,8 @@ export const Dashboard = ({
             balance={debitBalance.toFormat()}
             newEntryKey="debit"
             onClickPayed={markAsPayedClient}
+            newEntryFormat="new-accounting-entry"
+            filterOptionString="payed"
           />
         </div>
       )}
