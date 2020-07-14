@@ -8,6 +8,7 @@ import { InstallmentsCollection } from '/imports/api/installments';
 import newAccountingEntry from './src/publications/newAccountingEntry';
 import dashboardData from './src/publications/dashboardData';
 import accounts from './src/publications/accounts';
+import installments from './src/publications/installments';
 import { markAsPayed } from '../imports/api/methods/markAsPayed';
 import { deleteAccountingEntry } from '../imports/api/methods/deleteAccountingEntry';
 import { addInstallment } from '../imports/api/methods/addInstallment';

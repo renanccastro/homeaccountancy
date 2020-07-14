@@ -39,8 +39,18 @@ export const AddInstallment = () => {
     };
   });
 
-  const onFinish = ({ startMonth, ...values }) => {
-    addInstallment.call({ startMonth, ...values });
+  const onFinish = (values) => {
+    const { purchaseDate, startDate, startMonth, accId } = values;
+    const givenAccount = Accounts.findOne(accId);
+    if (startMonth) {
+      startMonth.set('date', givenAccount?.dueDate).toDate();
+    }
+    addInstallment.call({
+      ...values,
+      startMonth,
+      purchaseDate: purchaseDate.toDate(),
+      startDate: startDate.toDate(),
+    });
     navigate('../installments', { replace: true });
   };
 

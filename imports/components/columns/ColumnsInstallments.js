@@ -2,6 +2,7 @@ import { Space, Tag } from 'antd';
 import moment from 'moment';
 import { InstallmentsCollection } from '../../api/installments';
 import React from 'react';
+import Dinero from 'dinero.js';
 
 export const ColumnsInstallments = (installments) => [
   {
@@ -43,6 +44,14 @@ export const ColumnsInstallments = (installments) => [
     title: '# of Installments',
     dataIndex: 'installments',
     key: 'installments',
+  },
+  {
+    title: 'Value',
+    dataIndex: 'value',
+    key: 'value',
+    defaultSortOrder: 'descend',
+    sorter: ({ value: a }, { value: b }) => a - b,
+    render: (value) => Dinero({ amount: value }).toFormat(),
   },
   {
     title: 'Start',

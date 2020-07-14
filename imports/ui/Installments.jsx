@@ -2,6 +2,7 @@ import React from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { useTracker } from 'meteor/react-meteor-data';
 import keyBy from 'lodash.keyby';
+import Dinero from 'dinero.js';
 
 import { Button, PageHeader, Row, Statistic, Table } from 'antd';
 import { Link } from '@reach/router';
@@ -11,17 +12,31 @@ import { Categories } from '../api/categories';
 import { ColumnsInstallments } from '../components/columns/ColumnsInstallments';
 
 export const Installments = () => {
-  const installments = useTracker(() => {
-    const all = InstallmentsCollection.find().fetch();
+  const { installments } = useTracker(() => {
+    const handle = Meteor.subscribe('installments.findAll');
     const accounts = keyBy(Accounts.find().fetch(), '_id');
-    const categories = keyBy(Categories.find().fetch(), '_id');
-
-    return all.map((obj) => ({
-      ...obj,
-      account: accounts[obj.accountId],
-      categories: obj.categoryIds.map((_id) => categories[_id]),
-    }));
+    const categoriesArray = keyBy(Categories.find().fetch(), '_id');
+    return {
+      isLoading: !handle.ready(),
+      accounts: Accounts.find().fetch(),
+      categories: Categories.find().fetch(),
+      installments: InstallmentsCollection.find()
+        .fetch()
+        .map((obj) => ({
+          ...obj,
+          account: accounts[obj.accountId],
+          categories: obj.categoryIds.map((_id) => categoriesArray[_id]),
+        })),
+    };
   });
+
+  const balance = useTracker(() => {
+    let dineroBalance = new Dinero({ amount: 0 });
+    installments.forEach(({ value }) => {
+      dineroBalance = dineroBalance.add(new Dinero({ amount: value }));
+    });
+    return dineroBalance.toFormat();
+  }, [installments]);
 
   return (
     <div>
@@ -36,7 +51,7 @@ export const Installments = () => {
         ]}
       >
         <Row>
-          <Statistic title="Subtotal" />
+          <Statistic title="Subtotal" value={balance} />
         </Row>
       </PageHeader>
 

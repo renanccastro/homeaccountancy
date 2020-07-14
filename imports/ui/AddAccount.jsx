@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Button, Form, Input } from 'antd';
+import { Button, Form, Input, InputNumber } from 'antd';
 import { useNavigate } from '@reach/router';
 import Select from 'antd/es/select';
 import { useTracker } from 'meteor/react-meteor-data';
@@ -51,7 +51,7 @@ export const AddAccount = ({ format, id }) => {
     setIsCreditCard(bol);
   };
 
-  const onFinish = ({ ...values }) => {
+  const onFinish = (values) => {
     addAccount.call({ id, ...values });
     navigate('/accounts', { replace: true });
   };
@@ -96,7 +96,7 @@ export const AddAccount = ({ format, id }) => {
           name="dueDate"
           rules={[{ required: true, message: 'Please input the due date!' }]}
         >
-          <DatePicker format="DD/MM/YYYY" />
+          <InputNumber min={1} max={31} defaultValue={1} />
         </Form.Item>
       ) : null}
 

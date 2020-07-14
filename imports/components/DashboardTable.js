@@ -30,6 +30,7 @@ export const DashboardTable = ({
       setSelectedRows(selectedRowKeys);
     },
   };
+
   const hasSelected = selectedRows.length > 0;
 
   const onClick = () => {
@@ -85,6 +86,7 @@ export const DashboardTable = ({
             columns={columns}
             rowSelection={rowSelection}
             dataSource={dataFiltered}
+            rowKey="_id"
           />
         </TabPane>
         <TabPane
@@ -100,6 +102,7 @@ export const DashboardTable = ({
             columns={columns}
             rowSelection={rowSelection}
             dataSource={dataFiltered}
+            rowKey="_id"
           />
         </TabPane>
       </Tabs>
