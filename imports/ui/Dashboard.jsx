@@ -6,7 +6,6 @@ import { Categories } from '../api/categories';
 import { markAsPayed } from '../api/methods/markAsPayed';
 import { AccountingEntries } from '../api/accountingEntries';
 import { Accounts } from '../api/accounts';
-import { useDashboardData } from './helpers/dashboardHelpers';
 import { DashboardTable } from '../components/DashboardTable';
 import { InstallmentsCollection } from '../api/installments';
 import { ColumnsAccounting } from '../components/columns/ColumnsAccounting';
@@ -25,14 +24,7 @@ export const Dashboard = ({
     endRange: endRange.toDate(),
   };
 
-  const {
-    credit,
-    debit,
-    accountsArray,
-    categoriesArray,
-    installments,
-    isLoading,
-  } = useTracker(() => {
+  const { credit, debit, isLoading } = useTracker(() => {
     const handle = Meteor.subscribe('dashboardData.fetchAll', filters);
     return {
       isLoading: !handle.ready(),
@@ -47,16 +39,6 @@ export const Dashboard = ({
       installments: InstallmentsCollection.find().fetch(),
     };
   }, [filters]);
-
-  const { debitBalance, creditBalance } = useDashboardData(
-    credit,
-    debit,
-    accountsArray,
-    categoriesArray,
-    installments,
-    startRange,
-    endRange
-  );
 
   const markAsPayedClient = (rowsIds) => {
     const obj = {
@@ -77,7 +59,6 @@ export const Dashboard = ({
             subtitle="every operation that adds account balance"
             columns={ColumnsAccounting(credit)}
             datasource={credit}
-            balance={creditBalance.toFormat()}
             newEntryKey="credit"
             onClickPayed={markAsPayedClient}
             newEntryFormat="new-accounting-entry"
@@ -88,7 +69,6 @@ export const Dashboard = ({
             subtitle="every operation that subtracts account balance"
             columns={ColumnsAccounting(debit)}
             datasource={debit}
-            balance={debitBalance.toFormat()}
             newEntryKey="debit"
             onClickPayed={markAsPayedClient}
             newEntryFormat="new-accounting-entry"

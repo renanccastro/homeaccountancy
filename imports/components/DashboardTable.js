@@ -33,7 +33,7 @@ export const DashboardTable = ({
         ? currentValue[filterOptionString]
         : !currentValue[filterOptionString]
     );
-  }, [filterOptionActive]);
+  }, [filterOptionActive, datasource]);
 
   const [nameFirstTab, nameSecondTab] = tabsNames;
 

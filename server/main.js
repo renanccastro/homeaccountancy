@@ -17,6 +17,7 @@ import { addAccounting } from '../imports/api/methods/addAccountingEntry';
 import { addAccount } from '../imports/api/methods/addAccount';
 import { deleteAccount } from '../imports/api/methods/deleteAccount';
 import { addCategorie } from '../imports/api/methods/addCategorie';
+import { deleteCategorie } from '../imports/api/methods/deleteCategorie';
 
 Meteor.startup(() => {
   const basicAuth = new HttpBasicAuth('admin', 'teste');

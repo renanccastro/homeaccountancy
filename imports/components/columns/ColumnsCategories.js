@@ -1,13 +1,13 @@
-import { Checkbox, Space } from 'antd';
+import { Space } from 'antd';
 import React from 'react';
-import { Link } from '@reach/router';
-import { deleteAccount } from '../../api/methods/deleteAccount';
+import { deleteCategorie } from '../../api/methods/deleteCategorie';
 
 export const ColumnsCategories = (categories) => [
   {
     title: 'Name',
     dataIndex: 'name',
     key: 'name',
+    sorter: ({ name: a }, { name: b }) => a.localeCompare(b),
   },
   {
     title: 'Action',
@@ -20,7 +20,7 @@ export const ColumnsCategories = (categories) => [
             // eslint-disable-next-line no-restricted-globals
             const confirmation = confirm('Are you sure?');
             if (confirmation) {
-              deleteAccount.call({ _id });
+              deleteCategorie.call({ _id });
             }
           }}
         >
