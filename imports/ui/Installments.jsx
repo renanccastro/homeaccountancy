@@ -51,6 +51,7 @@ export const Installments = () => {
             balance={balance}
             enableRowSelection={false}
             newEntryKey="credit-card"
+            newEntryFormat="new-installment"
             filterOptionString="payed"
           />
         </div>

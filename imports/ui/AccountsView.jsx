@@ -2,7 +2,10 @@ import React from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { useTracker } from 'meteor/react-meteor-data';
 import { Accounts } from '../api/accounts';
-import { ColumnsAccounts } from '../components/columns/ColumnsAccounts';
+import {
+  ColumnsAccounts,
+  ColumnsAccountsCreditCard,
+} from '../components/columns/ColumnsAccounts';
 import { SpinnerLoading } from '../components/spinnerLoading/SpinnerLoading';
 import { DashboardTable } from '../components/DashboardTable';
 
@@ -29,10 +32,12 @@ export const AccountsView = () => {
             columns={ColumnsAccounts(accounts)}
             datasource={accounts}
             newEntryKey="account"
+            newEntryFormat="new-account"
             enableRowSelection={false}
             enableBalance={false}
             tabsNames={tabsNames}
             filterOptionString="creditCard"
+            secondTabColumns={ColumnsAccountsCreditCard(accounts)}
           />
         </div>
       )}

@@ -56,6 +56,11 @@ export const Template = ({ component: Component, ...props }) => {
               Accounts
             </Link>
           </Menu.Item>
+          <Menu.Item key="/categories" icon={<UserOutlined />}>
+            <Link to="/categories" className="nav-text">
+              Categories
+            </Link>
+          </Menu.Item>
         </Menu>
       </Sider>
       <Layout className="site-layout" style={{ marginLeft: 200 }}>

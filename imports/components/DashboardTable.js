@@ -16,11 +16,13 @@ export const DashboardTable = ({
   newEntryFormat,
   columns,
   datasource,
+  secondTabColumns,
   filterOptionString,
   onClickPayed,
   enableRowSelection,
   enableBalance,
   tabsNames,
+  enableTabs,
 }) => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [filterOptionActive, setFilterOptionActive] = useState(false);
@@ -94,46 +96,55 @@ export const DashboardTable = ({
         </div>
       ) : null}
 
-      <Tabs
-        defaultActiveKey="1"
-        onChange={(tabKey) => {
-          setFilterOptionActive(tabKey === '2');
-          setSelectedRows([]);
-        }}
-      >
-        <TabPane
-          tab={
-            <span>
-              <AppleOutlined />
-              {nameFirstTab}
-            </span>
-          }
-          key="1"
+      {enableTabs ? (
+        <Tabs
+          defaultActiveKey="1"
+          onChange={(tabKey) => {
+            setFilterOptionActive(tabKey === '2');
+            setSelectedRows([]);
+          }}
         >
-          <Table
-            columns={columns}
-            rowSelection={rowSelection}
-            dataSource={dataFiltered}
-            rowKey="_id"
-          />
-        </TabPane>
-        <TabPane
-          tab={
-            <span>
-              <AndroidOutlined />
-              {nameSecondTab}
-            </span>
-          }
-          key="2"
-        >
-          <Table
-            columns={columns}
-            rowSelection={rowSelection}
-            dataSource={dataFiltered}
-            rowKey="_id"
-          />
-        </TabPane>
-      </Tabs>
+          <TabPane
+            tab={
+              <span>
+                <AppleOutlined />
+                {nameFirstTab}
+              </span>
+            }
+            key="1"
+          >
+            <Table
+              columns={columns}
+              rowSelection={rowSelection}
+              dataSource={dataFiltered}
+              rowKey="_id"
+            />
+          </TabPane>
+          <TabPane
+            tab={
+              <span>
+                <AndroidOutlined />
+                {nameSecondTab}
+              </span>
+            }
+            key="2"
+          >
+            <Table
+              columns={!secondTabColumns ? columns : secondTabColumns}
+              rowSelection={rowSelection}
+              dataSource={dataFiltered}
+              rowKey="_id"
+            />
+          </TabPane>
+        </Tabs>
+      ) : (
+        <Table
+          columns={columns}
+          rowSelection={rowSelection}
+          dataSource={dataFiltered}
+          rowKey="_id"
+        />
+      )}
     </div>
   );
 };
@@ -144,12 +155,14 @@ DashboardTable.propTypes = {
   newEntryKey: PropTypes.string.isRequired,
   newEntryFormat: PropTypes.string.isRequired,
   columns: PropTypes.object.isRequired,
+  secondTabColumns: PropTypes.object,
   datasource: PropTypes.arrayOf(PropTypes.object).isRequired,
-  filterOptionString: PropTypes.string.isRequired,
+  filterOptionString: PropTypes.string,
   onClickPayed: PropTypes.func,
   enableRowSelection: PropTypes.bool,
   enableBalance: PropTypes.bool,
   tabsNames: PropTypes.arrayOf(PropTypes.string),
+  enableTabs: PropTypes.bool,
 };
 
 DashboardTable.defaultProps = {
@@ -157,4 +170,7 @@ DashboardTable.defaultProps = {
   enableBalance: true,
   tabsNames: ['Pending', 'Payed'],
   onClickPayed: undefined,
+  secondTabColumns: undefined,
+  filterOptionString: undefined,
+  enableTabs: true,
 };
