@@ -3,28 +3,25 @@ import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { AccountingEntries } from '../accountingEntries';
 import keyBy from 'lodash.keyby';
 import { Accounts } from '../accounts';
-// TODO ----> error TypeError: config._d.getTime is not a function
 
 export const addAccounting = new ValidatedMethod({
   name: 'addAccounting',
 
-  validate({ startMonth, updateId, ...values }) {
+  validate(values) {
     if (!values) {
       throw new Meteor.Error('Validation error', 'Value must not be null');
     }
   },
 
-  run({ startMonth, updateId, ...values }) {
+  run({ startMonth, id, ...values }) {
     const accountsMap = keyBy(Accounts.find().fetch(), '_id');
     const { dueDate } = accountsMap[values.accountId];
     const dates = {
-      dueDate: dueDate
-        ? startMonth.set('date', dueDate).toDate()
-        : values.dueDate.toDate(),
-      purchaseDate: values.purchaseDate?.toDate(),
+      dueDate: dueDate ? startMonth : values.dueDate,
+      purchaseDate: values.purchaseDate,
     };
 
-    if (updateId) {
+    if (id) {
       AccountingEntries.update(id, {
         $set: {
           ...values,

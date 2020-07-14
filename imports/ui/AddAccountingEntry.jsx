@@ -61,8 +61,18 @@ export const AddAccountingEntry = ({ format, id }) => {
     }
   };
 
-  const onFinish = ({ startMonth, ...values }) => {
-    addAccounting.call({ startMonth, ...values, id });
+  const onFinish = (values) => {
+    const { startMonth, dueDate, purchaseDate } = values;
+    if (startMonth) {
+      startMonth.set('date', dueDate).toDate();
+    }
+    addAccounting.call({
+      ...values,
+      startMonth,
+      id,
+      purchaseDate: purchaseDate.toDate(),
+      dueDate: dueDate.toDate(),
+    });
     navigate('/', { replace: true });
   };
 

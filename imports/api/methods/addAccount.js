@@ -2,7 +2,6 @@ import { Meteor } from 'meteor/meteor';
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { Accounts } from '../accounts';
 
-// TODO ----> error TypeError: config._d.getTime is not a function
 export const addAccount = new ValidatedMethod({
   name: 'addAccount',
 
