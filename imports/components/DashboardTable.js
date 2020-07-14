@@ -5,7 +5,7 @@ import { useTracker } from 'meteor/react-meteor-data';
 import AppleOutlined from '@ant-design/icons/lib/icons/AppleOutlined';
 import AndroidOutlined from '@ant-design/icons/lib/icons/AndroidOutlined';
 import React, { useState } from 'react';
-import { markAsPayed } from '../api/methods/markAsPayed';
+import Dinero from 'dinero.js';
 
 const { TabPane } = Tabs;
 export const DashboardTable = ({
@@ -14,8 +14,8 @@ export const DashboardTable = ({
   newEntryKey,
   columns,
   datasource,
-  balance,
   onClickPayed,
+  enableRowSelection,
 }) => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [payed, setPayed] = useState(false);
@@ -25,13 +25,23 @@ export const DashboardTable = ({
     );
   }, [payed]);
 
-  const rowSelection = {
-    onChange: (rowKey, selectedRowKeys) => {
-      setSelectedRows(selectedRowKeys);
-    },
-  };
+  const rowSelection = enableRowSelection
+    ? {
+        onChange: (rowKey, selectedRowKeys) => {
+          setSelectedRows(selectedRowKeys);
+        },
+      }
+    : undefined;
 
   const hasSelected = selectedRows.length > 0;
+
+  const balance = useTracker(() => {
+    let dineroBalance = new Dinero({ amount: 0 });
+    dataFiltered.forEach(({ value }) => {
+      dineroBalance = dineroBalance.add(new Dinero({ amount: value }));
+    });
+    return dineroBalance.toFormat();
+  }, [dataFiltered]);
 
   const onClick = () => {
     onClickPayed(selectedRows.map((row) => row._id));
@@ -53,18 +63,21 @@ export const DashboardTable = ({
           <Statistic title="Subtotal" value={balance} />
         </Row>
       </PageHeader>
-      <div style={{ marginBottom: 16 }}>
-        <Button
-          type="primary"
-          onClick={onClick}
-          disabled={!hasSelected || payed}
-        >
-          Set Payed
-        </Button>
-        <span style={{ marginLeft: 8 }}>
-          {hasSelected ? `Selected ${selectedRows.length} items` : ''}
-        </span>
-      </div>
+
+      {onClickPayed && rowSelection ? (
+        <div style={{ marginBottom: 16 }}>
+          <Button
+            type="primary"
+            onClick={onClick}
+            disabled={!hasSelected || payed}
+          >
+            Set Payed
+          </Button>
+          <span style={{ marginLeft: 8 }}>
+            {hasSelected ? `Selected ${selectedRows.length} items` : ''}
+          </span>
+        </div>
+      ) : null}
 
       <Tabs
         defaultActiveKey="1"
@@ -108,4 +121,8 @@ export const DashboardTable = ({
       </Tabs>
     </div>
   );
+};
+
+DashboardTable.defaultProps = {
+  enableRowSelection: true,
 };

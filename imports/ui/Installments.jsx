@@ -3,16 +3,15 @@ import React from 'react';
 import { useTracker } from 'meteor/react-meteor-data';
 import keyBy from 'lodash.keyby';
 import Dinero from 'dinero.js';
-
-import { Button, PageHeader, Row, Statistic, Table } from 'antd';
-import { Link } from '@reach/router';
 import { InstallmentsCollection } from '../api/installments';
 import { Accounts } from '../api/accounts';
 import { Categories } from '../api/categories';
 import { ColumnsInstallments } from '../components/columns/ColumnsInstallments';
+import { SpinnerLoading } from '../components/spinnerLoading/SpinnerLoading';
+import { DashboardTable } from '../components/DashboardTable';
 
 export const Installments = () => {
-  const { installments } = useTracker(() => {
+  const { installments, isLoading } = useTracker(() => {
     const handle = Meteor.subscribe('installments.findAll');
     const accounts = keyBy(Accounts.find().fetch(), '_id');
     const categoriesArray = keyBy(Categories.find().fetch(), '_id');
@@ -39,26 +38,22 @@ export const Installments = () => {
   }, [installments]);
 
   return (
-    <div>
-      <PageHeader
-        title="Installments"
-        // tags={<Tag color="blue">Running</Tag>}
-        subTitle="every installment you need to control here"
-        extra={[
-          <Button type="primary">
-            <Link to="/new-installment">+ Add</Link>
-          </Button>,
-        ]}
-      >
-        <Row>
-          <Statistic title="Subtotal" value={balance} />
-        </Row>
-      </PageHeader>
-
-      <Table
-        columns={ColumnsInstallments(installments)}
-        dataSource={installments}
-      />
-    </div>
+    <>
+      {isLoading ? (
+        <SpinnerLoading tip="Loading..." />
+      ) : (
+        <div>
+          <DashboardTable
+            title="Installments"
+            subtitle="every installments that adds account balance"
+            columns={ColumnsInstallments(installments)}
+            datasource={installments}
+            balance={balance}
+            enableRowSelection={false}
+            newEntryKey="credit-card"
+          />
+        </div>
+      )}
+    </>
   );
 };
