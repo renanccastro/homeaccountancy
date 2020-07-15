@@ -1,4 +1,4 @@
-import { Accounts } from '../../../imports/api/accounts';
+import { Accounts } from '../../accounts';
 
 Meteor.publish('accounts.findAll', () => {
   return Accounts.find();

@@ -1,4 +1,4 @@
-import { Categories } from '../../../imports/api/categories';
+import { Categories } from '../../categories';
 
 Meteor.publish('categories.findAll', () => {
   return Categories.find();

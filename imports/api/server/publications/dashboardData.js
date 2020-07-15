@@ -1,7 +1,7 @@
-import { AccountingEntries } from '../../../imports/api/accountingEntries';
-import { InstallmentsCollection } from '../../../imports/api/installments';
-import { Accounts } from '../../../imports/api/accounts';
-import { Categories } from '../../../imports/api/categories';
+import { AccountingEntries } from '../../accountingEntries';
+import { InstallmentsCollection } from '../../installments';
+import { Accounts } from '../../accounts';
+import { Categories } from '../../categories';
 
 Meteor.publish('dashboardData.fetchAll', function (filters) {
   const { startRange, endRange } = filters;

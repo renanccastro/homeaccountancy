@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { HttpBasicAuth } from 'meteor/jabbslad:basic-auth';
 import { createAccounts, createCategories } from '/imports/api/data';
 import '../imports/api/apiIndex';
-import './src/publications/publicationsIndex';
+import '../imports/api/server/publications/publicationsIndex';
 
 Meteor.startup(() => {
   const basicAuth = new HttpBasicAuth('admin', 'teste');
