@@ -60,7 +60,7 @@ export const AddAccount = ({ format, id }) => {
     console.log('Failed:', errorInfo);
   };
 
-  if (isLoading || (id && !existingEntry)) {
+  if (isLoading && id && !existingEntry) {
     return <SpinnerLoading tip="Loading..." />;
   }
 

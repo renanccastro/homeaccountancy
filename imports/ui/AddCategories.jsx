@@ -1,12 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button, Form, Input, message } from 'antd';
 import { useNavigate } from '@reach/router';
-import { useTracker } from 'meteor/react-meteor-data';
 import moment from 'moment';
-import keyBy from 'lodash.keyby';
-import { Categories } from '../api/categories';
-import { Accounts } from '../api/accounts';
-import { SpinnerLoading } from '../components/spinnerLoading/SpinnerLoading';
 import { addCategorie } from '../api/methods/addCategorie';
 
 const layout = {
@@ -20,18 +15,6 @@ const tailLayout = {
 export const AddCategories = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  const [accountId, setAccountId] = useState(null);
-
-  const { categories, accounts, accountsMap, isLoading } = useTracker(() => {
-    const handle = Meteor.subscribe('newAccounting.fetchAll');
-    const accountsData = Accounts.find().fetch();
-    return {
-      isLoading: !handle.ready(),
-      accounts: Accounts.find().fetch(),
-      categories: Categories.find().fetch(),
-      accountsMap: keyBy(accountsData, '_id'),
-    };
-  });
 
   const onFinish = (values) => {
     addCategorie.call({
@@ -44,10 +27,6 @@ export const AddCategories = () => {
     message.error('Try again!');
     console.log('Failed:', errorInfo);
   };
-
-  if (isLoading) {
-    return <SpinnerLoading tip="Loading..." />;
-  }
 
   return (
     <Form

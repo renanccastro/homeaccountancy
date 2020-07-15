@@ -96,9 +96,11 @@ export const AddAccountingEntry = ({ format, id }) => {
         dueDate: moment(),
         payed: false,
       };
-  if (isLoading || (id && !existingEntry)) {
+
+  if (isLoading && id && !existingEntry) {
     return <SpinnerLoading tip="Loading..." />;
   }
+
   return (
     <Form
       ref={formRef}
