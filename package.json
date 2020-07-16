@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "start": "meteor run",
-    "test": "meteor test --once --driver-package meteortesting:mocha",
+    "test": "jest",
+    "cypress:open": "cypress open",
     "test-app": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
     "visualize": "meteor --production --extra-packages bundle-visualizer"
   },
@@ -37,13 +38,16 @@
     ]
   },
   "devDependencies": {
+    "@shelf/jest-mongodb": "^1.2.1",
     "@tecsinapse/eslint-config-tecsinapse-js": "^2.5.5",
+    "cypress": "^4.10.0",
     "eslint": "^7.0.0",
     "eslint-import-resolver-meteor": "^0.4.0",
     "eslint-plugin-flowtype": "^5.0.1",
     "eslint-plugin-import": "^2.20.2",
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-react": "^7.20.0",
-    "eslint-plugin-react-hooks": "^4.0.2"
+    "eslint-plugin-react-hooks": "^4.0.2",
+    "jest": "^26.1.0"
   }
 }

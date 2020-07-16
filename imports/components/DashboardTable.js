@@ -69,7 +69,7 @@ export const DashboardTable = ({
         title={title}
         subTitle={subtitle}
         extra={[
-          <Button key="3" type="primary">
+          <Button key="3" type="primary" id="addButton">
             <Link to={`/${newEntryFormat}/${newEntryKey}`}>+ Add</Link>
           </Button>,
         ]}
