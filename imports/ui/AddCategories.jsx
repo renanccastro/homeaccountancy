@@ -53,7 +53,7 @@ export const AddCategories = () => {
         <Button
           type="ghost"
           htmlType="button"
-          onClick={() => navigate('../', { replace: true })}
+          onClick={() => navigate('../categories', { replace: true })}
         >
           Back
         </Button>

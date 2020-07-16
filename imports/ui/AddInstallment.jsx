@@ -178,7 +178,7 @@ export const AddInstallment = () => {
         <Button
           type="ghost"
           htmlType="button"
-          onClick={() => navigate('../', { replace: true })}
+          onClick={() => navigate('../installments', { replace: true })}
         >
           Back
         </Button>
