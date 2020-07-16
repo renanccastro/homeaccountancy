@@ -1,5 +1,5 @@
 describe('Categories', () => {
-  it('Visit and check add new categorie button', () => {
+  it('Visit home page and check add new button', () => {
     cy.visit('http://localhost:3000', {
       auth: {
         username: 'admin',
