@@ -1,5 +1,4 @@
 allow-deny@1.1.0
-autopublish@1.0.7
 autoupdate@1.6.0
 babel-compiler@7.5.3
 babel-runtime@1.5.0
@@ -36,6 +35,7 @@ jabbslad:basic-auth@0.2.2
 launch-screen@1.2.0
 livedata@1.0.18
 logging@1.1.20
+mdg:validated-method@1.2.0
 meteor@1.9.3
 meteor-base@1.4.0
 minifier-css@1.5.0

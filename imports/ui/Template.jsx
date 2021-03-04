@@ -17,12 +17,8 @@ const { Header, Content, Footer } = Layout;
 
 export const Template = ({ component: Component, ...props }) => {
   const location = useLocation();
-  const startOfYear = moment()
-    .startOf('year')
-    .subtract(1, 'years');
-  const endOfYear = moment()
-    .endOf('year')
-    .add(1, 'years');
+  const startOfYear = moment().startOf('year').subtract(1, 'years');
+  const endOfYear = moment().endOf('year').add(1, 'years');
 
   const monthsSet = new Set();
   const yearsSet = new Set();
@@ -55,6 +51,16 @@ export const Template = ({ component: Component, ...props }) => {
               Installments
             </Link>
           </Menu.Item>
+          <Menu.Item key="/accounts" icon={<UserOutlined />}>
+            <Link to="/accounts" className="nav-text">
+              Accounts
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="/categories" icon={<UserOutlined />}>
+            <Link to="/categories" className="nav-text">
+              Categories
+            </Link>
+          </Menu.Item>
         </Menu>
       </Sider>
       <Layout className="site-layout" style={{ marginLeft: 200 }}>
@@ -63,9 +69,9 @@ export const Template = ({ component: Component, ...props }) => {
           style={{ padding: 0 }}
         >
           <Menu mode="horizontal">
-            {years.map(year => (
+            {years.map((year) => (
               <SubMenu icon={<SettingOutlined />} key={year} title={year}>
-                {months.map(month => (
+                {months.map((month) => (
                   <Menu.Item key={`${year}_${month}`}>
                     {' '}
                     <Link

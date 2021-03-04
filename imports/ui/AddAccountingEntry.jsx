@@ -14,6 +14,9 @@ import Spin from 'antd/es/spin';
 import { Categories } from '../api/categories';
 import { Accounts } from '../api/accounts';
 import { AccountingEntries } from '../api/accountingEntries';
+import { InstallmentsCollection } from '../api/installments';
+import { addAccounting } from '../api/methods/addAccountingEntry';
+import { SpinnerLoading } from '../components/spinnerLoading/SpinnerLoading';
 
 const { Option } = Select;
 const layout = {
@@ -30,19 +33,25 @@ export const AddAccountingEntry = ({ format, id }) => {
   const formRef = useRef();
   const [accountId, setAccountId] = useState(null);
 
-  const { categories, accounts, accountsMap, existingEntry } = useTracker(
-    () => {
-      const accountsData = Accounts.find().fetch();
-      return {
-        categories: Categories.find().fetch(),
-        accounts: accountsData,
-        accountsMap: keyBy(accountsData, '_id'),
-        existingEntry: AccountingEntries.findOne(id),
-      };
-    }
-  );
+  const {
+    categories,
+    accounts,
+    accountsMap,
+    existingEntry,
+    isLoading,
+  } = useTracker(() => {
+    const handle = Meteor.subscribe('newAccounting.fetchAll');
+    const accountsData = Accounts.find().fetch();
+    return {
+      isLoading: !handle.ready(),
+      accounts: Accounts.find().fetch(),
+      categories: Categories.find().fetch(),
+      accountsMap: keyBy(accountsData, '_id'),
+      existingEntry: AccountingEntries.findOne(id),
+    };
+  });
 
-  const onAccountChange = value => {
+  const onAccountChange = (value) => {
     const accountDueDate = accountsMap[value].dueDate;
     setAccountId(value);
     if (accountDueDate) {
@@ -52,35 +61,22 @@ export const AddAccountingEntry = ({ format, id }) => {
     }
   };
 
-  const onFinish = ({ startMonth, ...values }) => {
-    const { dueDate } = accountsMap[values.accountId];
-    const dates = {
-      dueDate: dueDate
-        ? startMonth.set('date', dueDate).toDate()
-        : values.dueDate.toDate(),
-      purchaseDate: values.purchaseDate?.toDate(),
-    };
-
-    if (id) {
-      AccountingEntries.update(id, {
-        $set: {
-          ...values,
-          ...dates,
-          updatedAt: new Date(),
-        },
-      });
-      navigate('/', { replace: true });
-      return;
+  const onFinish = (values) => {
+    const { startMonth, dueDate, purchaseDate } = values;
+    if (startMonth) {
+      startMonth.set('date', dueDate).toDate();
     }
-    AccountingEntries.insert({
+    addAccounting.call({
       ...values,
-      ...dates,
-      createdAt: new Date(),
+      startMonth,
+      id,
+      purchaseDate: purchaseDate.toDate(),
+      dueDate: dueDate.toDate(),
     });
     navigate('/', { replace: true });
   };
 
-  const onFinishFailed = errorInfo => {
+  const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo);
   };
 
@@ -100,9 +96,11 @@ export const AddAccountingEntry = ({ format, id }) => {
         dueDate: moment(),
         payed: false,
       };
-  if (id && !existingEntry) {
-    return <Spin tip="Loading..." />;
+
+  if (isLoading && id && !existingEntry) {
+    return <SpinnerLoading tip="Loading..." />;
   }
+
   return (
     <Form
       ref={formRef}
@@ -190,11 +188,11 @@ export const AddAccountingEntry = ({ format, id }) => {
       >
         <InputNumber
           style={{ width: '100%' }}
-          formatter={value => {
+          formatter={(value) => {
             console.log(value);
             return new Dinero({ amount: parseInt(value, 10) || 0 }).toFormat();
           }}
-          parser={value => {
+          parser={(value) => {
             return value.replace(/[^0-9]/g, '');
           }}
         />

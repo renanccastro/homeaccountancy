@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Checkbox, Form, Input } from 'antd';
+import { Button, Form, Input, message } from 'antd';
 import { useNavigate } from '@reach/router';
 import Select from 'antd/es/select';
 import { useTracker } from 'meteor/react-meteor-data';
@@ -8,9 +8,11 @@ import DatePicker from 'antd/es/date-picker';
 import moment from 'moment';
 import Dinero from 'dinero.js';
 import keyBy from 'lodash.keyby';
-import { InstallmentsCollection } from '../api/installments';
 import { Categories } from '../api/categories';
 import { Accounts } from '../api/accounts';
+import { addInstallment } from '../api/methods/addInstallment';
+import Spin from 'antd/es/spin';
+import { SpinnerLoading } from '../components/spinnerLoading/SpinnerLoading';
 
 const { Option } = Select;
 const layout = {
@@ -25,35 +27,45 @@ export const AddInstallment = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [accountId, setAccountId] = useState(null);
-  const { categories, accounts, accountMap } = useTracker(() => {
+
+  const { categories, accounts, accountsMap, isLoading } = useTracker(() => {
+    const handle = Meteor.subscribe('newAccounting.fetchAll');
+    const accountsData = Accounts.find().fetch();
     return {
-      categories: Categories.find().fetch(),
+      isLoading: !handle.ready(),
       accounts: Accounts.find().fetch(),
-      accountMap: keyBy(Accounts.find().fetch(), '_id'),
+      categories: Categories.find().fetch(),
+      accountsMap: keyBy(accountsData, '_id'),
     };
   });
-  const onFinish = ({ startMonth, startDate, ...values }) => {
-    const { dueDate } = accountMap[values.accountId];
 
-    InstallmentsCollection.insert({
+  const onFinish = (values) => {
+    const { purchaseDate, startDate, startMonth, accId } = values;
+    const givenAccount = Accounts.findOne(accId);
+    if (startMonth) {
+      startMonth.set('date', givenAccount?.dueDate).toDate();
+    }
+    addInstallment.call({
       ...values,
-      startDate: dueDate
-        ? startMonth.set('date', dueDate).toDate()
-        : values.startDate.toDate(),
-      purchaseDate: values.dueDate?.toDate(),
-      finished: false,
-      payedInstallments: [],
+      startMonth,
+      purchaseDate: purchaseDate.toDate(),
+      startDate: startDate.toDate(),
     });
-    navigate('../', { replace: true });
+    navigate('../installments', { replace: true });
   };
 
-  const onAccountChange = value => {
+  const onAccountChange = (value) => {
     setAccountId(value);
   };
 
-  const onFinishFailed = errorInfo => {
+  const onFinishFailed = (errorInfo) => {
+    message.error('Try again!');
     console.log('Failed:', errorInfo);
   };
+
+  if (isLoading) {
+    return <SpinnerLoading tip="Loading..." />;
+  }
 
   return (
     <Form
@@ -126,17 +138,17 @@ export const AddInstallment = () => {
       >
         <InputNumber
           style={{ width: '100%' }}
-          formatter={value => {
+          formatter={(value) => {
             console.log(value);
             return new Dinero({ amount: parseInt(value, 10) || 0 }).toFormat();
           }}
-          parser={value => {
+          parser={(value) => {
             return value.replace(/[^0-9]/g, '');
           }}
         />
       </Form.Item>
 
-      {!accountId || !accountMap[accountId].creditCard ? (
+      {!accountId || !accountsMap[accountId].creditCard ? (
         <Form.Item
           label="Start Date"
           name="startDate"
@@ -166,7 +178,7 @@ export const AddInstallment = () => {
         <Button
           type="ghost"
           htmlType="button"
-          onClick={() => navigate('../', { replace: true })}
+          onClick={() => navigate('../installments', { replace: true })}
         >
           Back
         </Button>
